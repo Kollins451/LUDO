@@ -1,889 +1,917 @@
-/* ==========================================
-   CLASSIC LUDO
-   CSS
-========================================== */
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  -webkit-tap-highlight-color: transparent;
 }
 
 html,
 body {
   width: 100%;
   min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #101318;
-  color: white;
   overflow-x: hidden;
+  background: #8b4f23;
 }
 
-button {
-  font-family: inherit;
-  border: 0;
+
+/* =========================
+   GENERAL
+========================= */
+
+.hidden {
+  display: none !important;
+}
+
+.screen {
+  min-height: 100vh;
+}
+
+
+/* =========================
+   MENU
+========================= */
+
+.menu-screen {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      to bottom,
+      #4aa7df 0%,
+      #65b9e9 48%,
+      #51bf32 72%,
+      #36a51f 100%
+    );
+}
+
+.top-social {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 10;
+}
+
+.social {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 3px 8px #0008;
+}
+
+.apple {
+  background: #8c18cf;
+}
+
+.facebook {
+  background: #2879db;
+}
+
+.like {
+  background: #8c18cf;
+}
+
+
+.logo {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(55px, 14vw, 95px);
+  font-weight: 900;
+  text-align: center;
+  line-height: .75;
+  color: #ffd400;
+  text-shadow:
+    -4px -4px white,
+    4px -4px white,
+    -4px 4px white,
+    4px 4px white,
+    0 8px 0 #004e80;
+  z-index: 5;
+}
+
+.logo span {
+  display: block;
+  color: #f03720;
+}
+
+
+.floating-dice {
+  position: absolute;
+  top: 270px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: -5px;
+  z-index: 5;
+}
+
+.small-die {
+  width: 58px;
+  height: 58px;
+  margin-left: -7px;
+  border-radius: 13px;
+  background: #dc1919;
+  color: white;
+  font-size: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid white;
+  box-shadow: 0 5px 10px #0008;
+  transform: rotate(-8deg);
+}
+
+.small-die:nth-child(2) {
+  transform: rotate(8deg) translateY(-8px);
+}
+
+.small-die:nth-child(3) {
+  transform: rotate(12deg);
+}
+
+
+.menu-buttons {
+  position: absolute;
+  top: 370px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 20;
+}
+
+.menu-circle {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 7px solid white;
+  background: radial-gradient(circle at 30% 25%, #df5cff, #6615ca);
+  color: white;
+  font-size: 31px;
+  box-shadow:
+    inset 0 -7px 8px #24005e99,
+    0 5px 12px #0008;
   cursor: pointer;
 }
 
-
-/* ==========================================
-   SCREEN
-========================================== */
-
-.screen {
-  display: none;
-  min-height: 100vh;
-}
-
-.screen.active {
-  display: block;
-}
-
-
-/* ==========================================
-   MAIN MENU
-========================================== */
-
-#menuScreen {
-  min-height: 100vh;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background:
-    radial-gradient(circle at top, #343c4b 0%, #181c24 45%, #0c0f14 100%);
-}
-
-#menuScreen.active {
-  display: flex;
-}
-
-.menu-content {
-  width: min(92%, 480px);
-  text-align: center;
-}
-
-.ludo-logo {
-  font-size: clamp(65px, 18vw, 105px);
-  font-weight: 1000;
-  letter-spacing: -9px;
-  line-height: 1;
-  margin-bottom: 8px;
-  text-shadow: 0 10px 30px rgba(0,0,0,.5);
-}
-
-.ludo-logo span:nth-child(1) {
-  color: #e52d39;
-}
-
-.ludo-logo span:nth-child(2) {
-  color: #25ad59;
-}
-
-.ludo-logo span:nth-child(3) {
-  color: #efc62a;
-}
-
-.ludo-logo span:nth-child(4) {
-  color: #2874dc;
-}
-
-.tagline {
-  color: #9299a8;
-  font-size: 12px;
-  letter-spacing: 4px;
-  margin-bottom: 38px;
-}
-
-.menu-card {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.mode-button {
-  width: 100%;
-  min-height: 82px;
-  display: flex;
-  align-items: center;
-  text-align: left;
-  gap: 16px;
-  padding: 15px 18px;
-  color: white;
-  background: #202631;
-  border: 1px solid #343c4a;
-  border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.25);
-  transition: .2s ease;
-}
-
-.mode-button:hover {
-  transform: translateY(-3px);
-  border-color: #697386;
-}
-
-.mode-button:active {
-  transform: scale(.98);
-}
-
-.mode-button:nth-child(2) {
-  background: linear-gradient(135deg, #552a84, #8137b0);
-  border-color: #9953c6;
-}
-
-.mode-icon {
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 31px;
-  background: rgba(255,255,255,.08);
-  border-radius: 14px;
-}
-
-.mode-text {
-  flex: 1;
-}
-
-.mode-text strong {
-  display: block;
-  font-size: 17px;
-  margin-bottom: 5px;
-}
-
-.mode-text small {
-  color: #aeb5c1;
-  font-size: 12px;
-}
-
-.arrow {
-  font-size: 30px;
-  color: #9ca4b2;
-}
-
-.footer-text {
-  color: #646c7a;
-  font-size: 12px;
-  margin-top: 28px;
-}
-
-
-/* ==========================================
-   GAME SCREEN
-========================================== */
-
-#gameScreen {
-  background:
-    radial-gradient(circle at top, #252c38 0%, #11151c 50%, #090b0f 100%);
-  padding-bottom: 25px;
-}
-
-
-/* ==========================================
-   HEADER
-========================================== */
-
-.top-bar {
-  width: min(100%, 760px);
-  height: 72px;
-  margin: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 15px;
-}
-
-.top-button {
-  width: 43px;
-  height: 43px;
-  border-radius: 50%;
-  background: #242a34;
-  color: white;
-  font-size: 21px;
-  border: 1px solid #363e4c;
-}
-
-.title-area {
-  text-align: center;
-}
-
-.title-area h1 {
-  font-size: 25px;
-  letter-spacing: 4px;
-}
-
-.title-area span {
-  color: #8f97a6;
-  font-size: 11px;
-}
-
-
-/* ==========================================
-   TURN PANEL
-========================================== */
-
-.turn-panel {
-  width: min(92%, 650px);
-  min-height: 57px;
-  margin: 0 auto 12px;
-  background: #191e26;
-  border: 1px solid #303846;
-  border-radius: 15px;
-  padding: 8px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.current-player {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-#turnDot {
-  width: 13px;
-  height: 13px;
-  background: #e52d39;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(229,45,57,.6);
-}
-
-.current-player strong {
-  display: block;
-  font-size: 14px;
-}
-
-.current-player small {
-  display: block;
-  color: #858e9d;
-  font-size: 11px;
-  margin-top: 3px;
-}
-
-.dice-mini {
-  width: 37px;
-  height: 37px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  color: #111;
-  border-radius: 9px;
-  font-size: 19px;
-  font-weight: bold;
-}
-
-
-/* ==========================================
-   BOARD WRAPPER
-========================================== */
-
-.board-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 0 8px 15px;
-}
-
-
-/* ==========================================
-   15 x 15 LUDO BOARD
-========================================== */
-
-.board {
-  width: min(94vw, 650px);
-  aspect-ratio: 1;
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(15, 1fr);
-  grid-template-rows: repeat(15, 1fr);
-  background: white;
-  border: 6px solid #171a20;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow:
-    0 25px 60px rgba(0,0,0,.5),
-    0 3px 0 rgba(255,255,255,.15);
-}
-
-
-/* ==========================================
-   GRID CELLS
-========================================== */
-
-.cell {
-  position: relative;
-  border: 1px solid #b9bdc2;
-  background: #f7f7f7;
-}
-
-
-/* HOME AREAS */
-
-.cell.red-home {
-  background: #e83a43;
-}
-
-.cell.green-home {
-  background: #26aa58;
-}
-
-.cell.yellow-home {
-  background: #efc62a;
-}
-
-.cell.blue-home {
-  background: #2e74d8;
-}
-
-
-/* HOME INNER */
-
-.cell.home-inner-red {
-  background: #fff;
-  border-radius: 4px;
-}
-
-.cell.home-inner-green {
-  background: #fff;
-  border-radius: 4px;
-}
-
-.cell.home-inner-yellow {
-  background: #fff;
-  border-radius: 4px;
-}
-
-.cell.home-inner-blue {
-  background: #fff;
-  border-radius: 4px;
-}
-
-
-/* PATH */
-
-.cell.path {
-  background: #fff;
-}
-
-
-/* START COLORS */
-
-.cell.start-red {
-  background: #ef6970;
-}
-
-.cell.start-green {
-  background: #62c886;
-}
-
-.cell.start-yellow {
-  background: #f4db68;
-}
-
-.cell.start-blue {
-  background: #6d9de6;
-}
-
-
-/* HOME LANES */
-
-.cell.lane-red {
-  background: #ef6970;
-}
-
-.cell.lane-green {
-  background: #62c886;
-}
-
-.cell.lane-yellow {
-  background: #f4db68;
-}
-
-.cell.lane-blue {
-  background: #6d9de6;
-}
-
-
-/* CENTER */
-
-.cell.center-red {
-  background: #e83a43;
-}
-
-.cell.center-green {
-  background: #26aa58;
-}
-
-.cell.center-yellow {
-  background: #efc62a;
-}
-
-.cell.center-blue {
-  background: #2e74d8;
-}
-
-
-/* ==========================================
-   HOME CIRCLES
-========================================== */
-
-.home-circle {
-  position: absolute;
-  width: 68%;
-  height: 68%;
-  left: 16%;
-  top: 16%;
-  background: #f2f3f4;
-  border: 2px solid rgba(0,0,0,.12);
-  border-radius: 50%;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
-}
-
-
-/* ==========================================
-   SAFE STAR
-========================================== */
-
-.star {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  color: #707783;
-  font-weight: bold;
-}
-
-
-/* ==========================================
-   CENTER DICE
-========================================== */
-
-.center-dice-area {
-  position: absolute;
-  z-index: 50;
-  width: 27%;
-  height: 27%;
-  left: 36.5%;
-  top: 36.5%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: conic-gradient(
-    #e83a43 0deg 90deg,
-    #26aa58 90deg 180deg,
-    #2e74d8 180deg 270deg,
-    #efc62a 270deg 360deg
-  );
-  border: 2px solid #171a20;
-  border-radius: 7px;
-  box-shadow: 0 5px 14px rgba(0,0,0,.25);
-}
-
-.center-ludo-text {
-  color: white;
-  font-weight: 1000;
-  font-size: clamp(9px, 2vw, 16px);
-  text-shadow: 0 2px 3px rgba(0,0,0,.4);
-}
-
-.dice {
-  width: clamp(35px, 8vw, 57px);
-  height: clamp(35px, 8vw, 57px);
-  background: white;
-  color: #11151c;
-  border-radius: 10px;
-  box-shadow:
-    0 5px 12px rgba(0,0,0,.35),
-    inset 0 1px 2px rgba(0,0,0,.1);
-  font-size: clamp(18px, 4vw, 28px);
-  font-weight: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dice.rolling {
-  animation: rollAnimation .55s ease;
-}
-
-@keyframes rollAnimation {
-
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-
-  25% {
-    transform: rotate(90deg) scale(1.15);
-  }
-
-  50% {
-    transform: rotate(180deg) scale(.9);
-  }
-
-  75% {
-    transform: rotate(270deg) scale(1.15);
-  }
-
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
-
-}
-
-.roll-button {
-  padding: 4px 9px;
-  border-radius: 6px;
-  background: #15181e;
-  color: white;
-  font-size: clamp(7px, 1.7vw, 11px);
-  font-weight: bold;
-}
-
-.roll-button:disabled {
-  opacity: .45;
-}
-
-
-/* ==========================================
-   BOARD PIECES
-========================================== */
-
-.board-piece {
-  position: absolute;
-  width: 5%;
-  height: 5%;
-  z-index: 70;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.85);
-  transform: translate(-50%, -50%);
-  transition:
-    left .18s linear,
-    top .18s linear,
-    transform .15s ease;
-  box-shadow:
-    0 4px 7px rgba(0,0,0,.4),
-    inset 0 2px 3px rgba(255,255,255,.45);
-  padding: 0;
-}
-
-.board-piece:hover {
-  transform: translate(-50%, -50%) scale(1.15);
-}
-
-.board-piece.selectable {
-  animation: pieceGlow 1s infinite;
-}
-
-@keyframes pieceGlow {
-
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 0 0 rgba(255,255,255,.7);
-  }
-
-  50% {
-    transform: translate(-50%, -50%) scale(1.16);
-    box-shadow: 0 0 0 7px rgba(255,255,255,.15);
-  }
-
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 0 0 rgba(255,255,255,0);
-  }
-
-}
-
-.piece-red {
-  background: radial-gradient(circle at 35% 30%, #ff7076, #d51f2a);
-}
-
-.piece-green {
-  background: radial-gradient(circle at 35% 30%, #65d88b, #158f44);
-}
-
-.piece-yellow {
-  background: radial-gradient(circle at 35% 30%, #fff080, #d7a900);
-}
-
-.piece-blue {
-  background: radial-gradient(circle at 35% 30%, #76a9ff, #1c59bd);
-}
-
-
-/* ==========================================
-   PLAYER HAND
-========================================== */
-
-.player-hand {
-  width: min(92%, 650px);
-  margin: 0 auto;
-  background: #191e26;
-  border: 1px solid #303846;
-  border-radius: 18px;
-  padding: 14px;
-}
-
-.hand-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.hand-top h2 {
-  font-size: 16px;
-}
-
-.hand-top p {
-  color: #818a99;
-  font-size: 11px;
-  margin-top: 4px;
-}
-
-.home-count {
-  background: #2a303a;
-  border-radius: 20px;
-  padding: 6px 11px;
-  color: #d7dbe1;
-  font-size: 13px;
-}
-
-.hand-pieces {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.hand-piece {
-  width: 57px;
-  height: 57px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ff7076, #d51f2a);
-  border: 4px solid #292f3a;
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  box-shadow:
-    0 5px 10px rgba(0,0,0,.4),
-    inset 0 2px 3px rgba(255,255,255,.35);
-  transition: .2s;
-  position: relative;
-}
-
-.hand-piece:hover {
+.menu-circle:hover {
   transform: translateY(-4px);
 }
 
-.hand-piece.available {
-  border-color: white;
-  animation: handPulse 1s infinite;
+.big-play {
+  width: 92px;
+  height: 92px;
+  background: radial-gradient(circle at 30% 25%, #585fff, #171ab4);
 }
 
-.hand-piece.finished {
-  opacity: .3;
-}
 
-.hand-piece span {
+.menu-labels {
   position: absolute;
-  right: -5px;
-  bottom: -5px;
-  width: 20px;
-  height: 20px;
-  background: #101318;
+  top: 465px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 290px;
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  text-shadow: 0 2px 2px #000;
+  z-index: 10;
+}
+
+
+.menu-ground {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -100px;
+  height: 390px;
+  border-radius: 50% 50% 0 0;
+  background:
+    radial-gradient(circle at 30% 20%, #73db26 0 20%, transparent 21%),
+    linear-gradient(#53c920, #159113);
+}
+
+.road {
+  position: absolute;
+  width: 120px;
+  height: 420px;
+  left: 50%;
+  top: -90px;
+  transform: translateX(-50%) rotate(25deg);
+  background: #f5dc9b;
+  border: 6px solid #c59a52;
+  border-radius: 70px;
+}
+
+.road::after {
+  content: "2026";
+  position: absolute;
+  top: 190px;
+  left: 27px;
+  transform: rotate(-20deg);
+  color: #ad8a53;
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.grass-text {
+  position: absolute;
+  bottom: 75px;
+  left: 50px;
+  color: #68ce38;
+  font-size: 45px;
+  font-weight: 900;
+  transform: rotate(-8deg);
+  text-shadow: 2px 3px #08780d;
+}
+
+.grass-text.right {
+  left: auto;
+  right: 50px;
+  transform: rotate(8deg);
+}
+
+
+/* =========================
+   GAME
+========================= */
+
+.game-screen {
+  position: relative;
+  background:
+    repeating-radial-gradient(
+      ellipse at center,
+      #9b5c2e 0px,
+      #925326 5px,
+      #a56334 10px,
+      #925326 15px
+    );
+  padding-bottom: 35px;
+  color: white;
+}
+
+
+.game-top {
+  position: relative;
+  min-height: 105px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 10px;
+}
+
+
+.round-control {
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
+  border: 3px solid white;
+  background: radial-gradient(circle at 30% 25%, #53cfff, #04709f);
+  color: white;
+  font-size: 29px;
+  box-shadow: 0 4px 10px #0008;
+  cursor: pointer;
+}
+
+.sound-button {
+  background: radial-gradient(circle at 30% 25%, #ffd45b, #e46c00);
+}
+
+
+.score-box {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+}
+
+.score-box div {
+  background: #086e6b;
+  border-radius: 20px;
+  min-width: 180px;
+  padding: 7px 18px;
+  font-size: 20px;
+  font-weight: 900;
+  text-shadow: 0 2px 2px #000;
+}
+
+
+/* =========================
+   HAND
+========================= */
+
+.hand-area {
+  position: relative;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hand {
+  background: #00625e;
+  border-radius: 20px;
+  padding: 7px 24px;
+  font-size: 17px;
+  box-shadow: 0 3px 5px #0007;
+}
+
+.hand span {
+  margin-right: 6px;
+}
+
+
+/* =========================
+   BOARD
+========================= */
+
+.board-wrapper {
+  width: min(96vw, 540px);
+  margin: 5px auto 0;
+}
+
+.board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: white;
+  border: 4px solid #173e16;
+  box-shadow:
+    0 0 0 3px #4d9d42,
+    0 8px 18px #000b;
+  overflow: hidden;
+}
+
+
+/* =========================
+   HOME AREAS
+========================= */
+
+.home-area {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  z-index: 5;
+  border: 3px solid #202020;
+  overflow: hidden;
+}
+
+.green-home {
+  top: 0;
+  left: 0;
+  background:
+    radial-gradient(circle at 50% 50%, #a9e55a, #23882b);
+}
+
+.yellow-home {
+  top: 0;
+  right: 0;
+  background:
+    radial-gradient(circle at 50% 50%, #fff36a, #f5a900);
+}
+
+.red-home {
+  bottom: 0;
+  left: 0;
+  background:
+    radial-gradient(circle at 50% 50%, #ff9c52, #c91513);
+}
+
+.blue-home {
+  bottom: 0;
+  right: 0;
+  background:
+    radial-gradient(circle at 50% 50%, #5d9cff, #0754a7);
+}
+
+
+.home-area::before {
+  content: "";
+  position: absolute;
+  inset: 9%;
+  border-radius: 10px;
+  background: #ffffff18;
+}
+
+
+.player-title {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  font-size: clamp(15px, 4vw, 24px);
+  color: #00f2ff;
+  font-weight: 900;
+  white-space: nowrap;
+  text-shadow:
+    -2px -2px #005,
+    2px -2px #005,
+    -2px 2px #005,
+    2px 2px #005;
+}
+
+
+.avatar {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: #ddd;
+  border: 4px solid white;
+  box-shadow: 0 3px 7px #000b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 38px;
+}
+
+
+/* =========================
+   HOME PIECES
+========================= */
+
+.home-piece {
+  position: absolute;
+  width: 17%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  z-index: 12;
+  border: 4px solid white;
+  box-shadow:
+    inset 0 3px 3px #ffffffaa,
+    0 3px 6px #0009;
+  cursor: pointer;
+  transition: transform .15s;
+}
+
+.home-piece:hover {
+  transform: scale(1.08);
+}
+
+.green-piece {
+  background: radial-gradient(circle at 30% 25%, #79ff72, #00a438);
+}
+
+.yellow-piece {
+  background: radial-gradient(circle at 30% 25%, #fff88d, #f0c600);
+}
+
+.red-piece {
+  background: radial-gradient(circle at 30% 25%, #ff7e7e, #ec1616);
+}
+
+.blue-piece {
+  background: radial-gradient(circle at 30% 25%, #75c7ff, #1710c5);
+}
+
+
+.p1 {
+  left: 12%;
+  top: 22%;
+}
+
+.p2 {
+  right: 12%;
+  top: 22%;
+}
+
+.p3 {
+  left: 12%;
+  bottom: 15%;
+}
+
+.p4 {
+  right: 12%;
+  bottom: 15%;
+}
+
+
+/* =========================
+   BOARD PATH
+========================= */
+
+.path-cell {
+  position: absolute;
+  width: 6.66%;
+  height: 6.66%;
+  border: 1px solid #222;
+  background: #f8f8f8;
+  z-index: 2;
+}
+
+.green-path {
+  background: #009b19;
+}
+
+.yellow-path {
+  background: #ffd600;
+}
+
+.red-path {
+  background: #e91c19;
+}
+
+.blue-path {
+  background: #1669d9;
+}
+
+.white-path {
+  background: #f8f8f8;
+}
+
+
+/*
+  CROSS PATH
+*/
+
+.c1 { left: 40%; top: 0; }
+.c2 { left: 46.66%; top: 0; }
+.c3 { left: 40%; top: 6.66%; }
+.c4 { left: 46.66%; top: 6.66%; }
+.c5 { left: 40%; top: 13.33%; }
+
+.c6 { left: 53.33%; top: 40%; }
+.c7 { left: 60%; top: 40%; }
+.c8 { left: 66.66%; top: 40%; }
+.c9 { left: 73.33%; top: 40%; }
+.c10 { left: 80%; top: 40%; }
+
+.c11 { left: 53.33%; top: 46.66%; }
+.c12 { left: 60%; top: 46.66%; }
+.c13 { left: 66.66%; top: 46.66%; }
+.c14 { left: 73.33%; top: 46.66%; }
+.c15 { left: 80%; top: 46.66%; }
+
+.c16 { left: 40%; bottom: 0; }
+.c17 { left: 46.66%; bottom: 0; }
+.c18 { left: 40%; bottom: 6.66%; }
+.c19 { left: 46.66%; bottom: 6.66%; }
+.c20 { left: 40%; bottom: 13.33%; }
+
+.c21 { left: 0; top: 40%; }
+.c22 { left: 6.66%; top: 40%; }
+.c23 { left: 13.33%; top: 40%; }
+.c24 { left: 20%; top: 40%; }
+.c25 { left: 26.66%; top: 40%; }
+
+.c26 { left: 0; top: 46.66%; }
+.c27 { left: 6.66%; top: 46.66%; }
+.c28 { left: 13.33%; top: 46.66%; }
+.c29 { left: 20%; top: 46.66%; }
+.c30 { left: 26.66%; top: 46.66%; }
+
+
+/* =========================
+   CENTER
+========================= */
+
+.center-area {
+  position: absolute;
+  left: 40%;
+  top: 40%;
+  width: 20%;
+  height: 20%;
+  background:
+    linear-gradient(
+      135deg,
+      #ef1c1c 0 50%,
+      #1374bd 50% 100%
+    );
+  border: 3px solid #126a7a;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
 }
 
-@keyframes handPulse {
+.center-area::before,
+.center-area::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: #008fa4;
+}
 
-  50% {
-    transform: translateY(-5px) scale(1.08);
-  }
+.center-area::before {
+  transform: rotate(45deg);
+}
 
+.center-area::after {
+  transform: rotate(-45deg);
 }
 
 
-/* ==========================================
-   BOTTOM CONTROLS
-========================================== */
-
-.bottom-controls {
-  width: min(92%, 650px);
-  margin: 12px auto 0;
+.dice-container {
+  position: relative;
+  z-index: 30;
   display: flex;
-  gap: 10px;
+  gap: 4px;
+  transform: rotate(-2deg);
 }
 
-.bottom-controls button {
-  flex: 1;
-  padding: 11px;
-  background: #1d232c;
-  border: 1px solid #343c49;
-  border-radius: 12px;
-  color: #c7cdd6;
+.dice {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  border: 3px solid white;
+  background: #d71717;
+  box-shadow: 0 3px 5px #0009;
+  color: white;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.dice span {
+  font-size: 22px;
 }
 
 
-/* ==========================================
+/* =========================
+   COUNTERS
+========================= */
+
+.dice-counters {
+  display: flex;
+  justify-content: center;
+  gap: 13px;
+  margin-top: 22px;
+}
+
+.counter {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 5px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 3px #000;
+  box-shadow:
+    inset 0 -8px 10px #0005,
+    0 4px 9px #0009;
+}
+
+.blue-counter {
+  background: radial-gradient(circle at 30% 20%, #76ddff, #008bc3);
+}
+
+.red-counter {
+  background: radial-gradient(circle at 30% 20%, #ff6767, #dc1111);
+}
+
+.green-counter {
+  background: radial-gradient(circle at 30% 20%, #76ff75, #159a21);
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.stats {
+  margin: 18px auto 0;
+  width: min(94vw, 500px);
+  font-size: 20px;
+  line-height: 1.5;
+  text-shadow: 0 2px 2px #000;
+}
+
+.stats div {
+  margin: 3px 0;
+}
+
+
+/* =========================
+   ROLL
+========================= */
+
+.roll-button {
+  display: block;
+  margin: 18px auto 0;
+  border: 3px solid white;
+  border-radius: 28px;
+  padding: 12px 35px;
+  background: #00645f;
+  color: white;
+  font-weight: 900;
+  font-size: 18px;
+  box-shadow: 0 4px 7px #0008;
+  cursor: pointer;
+}
+
+.roll-button:active {
+  transform: scale(.96);
+}
+
+.roll-button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+
+.mode-label {
+  text-align: center;
+  margin-top: 12px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+
+/* =========================
    MODALS
-========================================== */
+========================= */
 
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 200;
-  display: none;
+  background: #000b;
+  display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 999;
   padding: 20px;
-  background: rgba(0,0,0,.78);
 }
 
-.modal.show {
-  display: flex;
-}
-
-.modal-box {
-  width: min(92%, 400px);
-  background: #1c222c;
-  border: 1px solid #3b4452;
-  border-radius: 23px;
-  padding: 28px;
-  box-shadow: 0 25px 70px rgba(0,0,0,.6);
-}
-
-.winner-box {
+.modal-card {
+  width: min(90vw, 370px);
+  background: linear-gradient(#087c76, #034946);
+  border: 4px solid white;
+  border-radius: 25px;
+  padding: 30px 22px;
   text-align: center;
+  color: white;
+  box-shadow: 0 10px 30px #000;
 }
 
-.winner-emoji {
+.modal-card h2 {
+  font-size: 30px;
+  margin-bottom: 12px;
+}
+
+.modal-card p {
+  margin-bottom: 20px;
+}
+
+.winner-icon {
   font-size: 70px;
-  animation: trophy 1s infinite alternate;
 }
 
-@keyframes trophy {
+.modal-card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 2px solid white;
+  border-radius: 25px;
+  background: #e31b1b;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
 
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  font-size: 18px;
+}
+
+
+/* =========================
+   ACTIVE PIECE
+========================= */
+
+.home-piece.active-piece {
+  animation: pulsePiece .7s infinite alternate;
+}
+
+@keyframes pulsePiece {
   from {
     transform: scale(1);
   }
 
   to {
-    transform: scale(1.15) rotate(4deg);
+    transform: scale(1.18);
+  }
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 480px) {
+
+  .logo {
+    top: 80px;
   }
 
-}
-
-.winner-box h2 {
-  font-size: 31px;
-  margin: 8px 0;
-}
-
-.winner-box p {
-  color: #9da5b2;
-  margin-bottom: 24px;
-}
-
-.primary-modal-button,
-.secondary-modal-button {
-  width: 100%;
-  padding: 13px;
-  border-radius: 11px;
-  font-weight: bold;
-  color: white;
-}
-
-.primary-modal-button {
-  background: #25a95b;
-}
-
-.secondary-modal-button {
-  margin-top: 10px;
-  background: #2a303a;
-}
-
-.rules-box {
-  position: relative;
-}
-
-.rules-box h2 {
-  margin-bottom: 20px;
-}
-
-.rule-list p {
-  color: #c5cad3;
-  margin: 13px 0;
-  font-size: 14px;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  background: transparent;
-  color: white;
-  font-size: 28px;
-}
-
-
-/* ==========================================
-   MOBILE
-========================================== */
-
-@media (max-width: 600px) {
-
-  .top-bar {
-    height: 64px;
+  .floating-dice {
+    top: 245px;
   }
 
-  .title-area h1 {
-    font-size: 21px;
+  .menu-buttons {
+    top: 335px;
   }
 
-  .board {
-    border-width: 4px;
+  .menu-labels {
+    top: 430px;
   }
 
-  .center-ludo-text {
-    display: none;
+  .game-top {
+    min-height: 92px;
   }
 
-  .roll-button {
-    padding: 3px 6px;
-  }
-
-  .hand-piece {
+  .round-control {
     width: 50px;
     height: 50px;
+    font-size: 23px;
   }
 
+  .score-box {
+    margin-top: 42px;
+  }
+
+  .score-box div {
+    min-width: 145px;
+    font-size: 16px;
+    padding: 6px 12px;
+  }
+
+  .avatar {
+    width: 45px;
+    height: 45px;
+    font-size: 27px;
+  }
+
+  .dice {
+    width: 31px;
+    height: 31px;
+    font-size: 14px;
+  }
+
+  .dice span {
+    font-size: 15px;
+  }
+
+  .counter {
+    width: 62px;
+    height: 62px;
+  }
+
+  .stats {
+    font-size: 17px;
+  }
 }
 
-@media (max-width: 380px) {
 
-  .turn-panel {
-    min-height: 52px;
+@media (max-height: 700px) {
+
+  .logo {
+    top: 60px;
   }
 
-  .hand-piece {
-    width: 44px;
-    height: 44px;
+  .floating-dice {
+    top: 200px;
   }
 
-  .hand-piece span {
-    width: 17px;
-    height: 17px;
-    font-size: 9px;
+  .menu-buttons {
+    top: 290px;
   }
 
+  .menu-labels {
+    top: 385px;
+  }
+
+  .menu-ground {
+    height: 270px;
+  }
 }
