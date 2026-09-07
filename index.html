@@ -1,213 +1,882 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#111827">
-  <title>Ludo Royale</title>
+/* =========================================
+   LUDO ROYALE
+   GAME JAVASCRIPT
+========================================= */
 
-  <link rel="stylesheet" href="style.css">
-</head>
+const players = [
+  {
+    name: "RED PLAYER",
+    color: "red",
+    pieces: [0, 0, 0, 0],
+    finished: 0
+  },
+  {
+    name: "BLUE PLAYER",
+    color: "blue",
+    pieces: [0, 0, 0, 0],
+    finished: 0
+  },
+  {
+    name: "GREEN PLAYER",
+    color: "green",
+    pieces: [0, 0, 0, 0],
+    finished: 0
+  },
+  {
+    name: "YELLOW PLAYER",
+    color: "yellow",
+    pieces: [0, 0, 0, 0],
+    finished: 0
+  }
+];
 
-<body>
+let currentPlayer = 0;
+let diceValue = 1;
+let waitingForPiece = false;
+let gameOver = false;
+let soundEnabled = true;
 
-  <main class="game-container">
+/* =========================================
+   DOM ELEMENTS
+========================================= */
 
-    <header class="game-header">
-      <div>
-        <h1>🎲 LUDO ROYALE</h1>
-        <p>Roll the dice. Move your pieces. Be the first home!</p>
-      </div>
+const dice = document.getElementById("dice");
+const rollButton = document.getElementById("rollButton");
+const message = document.getElementById("message");
+const playerName = document.getElementById("playerName");
+const turnDot = document.getElementById("turnDot");
+const soundToggle = document.getElementById("soundToggle");
+const newGameButton = document.getElementById("newGameButton");
+const winnerModal = document.getElementById("winnerModal");
+const winnerTitle = document.getElementById("winnerTitle");
+const playAgainButton = document.getElementById("playAgainButton");
 
-      <button id="soundToggle" class="sound-button">
-        🔊 Sound ON
-      </button>
-    </header>
+const diceFaces = [
+  "⚀",
+  "⚁",
+  "⚂",
+  "⚃",
+  "⚄",
+  "⚅"
+];
 
-    <section class="game-layout">
+/* =========================================
+   AUDIO SYSTEM
+   Browser-generated sounds
+========================================= */
 
-      <!-- GAME BOARD -->
-      <div class="board-wrapper">
+let audioContext = null;
+let musicTimer = null;
+let musicPlaying = false;
 
-        <div class="board">
+function createAudioContext() {
 
-          <!-- RED HOME -->
-          <div class="home red-home">
-            <div class="home-title">RED</div>
+  if (!audioContext) {
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
 
-            <div class="home-yard">
-              <div class="piece red-piece" data-player="red" data-piece="0"></div>
-              <div class="piece red-piece" data-player="red" data-piece="1"></div>
-              <div class="piece red-piece" data-player="red" data-piece="2"></div>
-              <div class="piece red-piece" data-player="red" data-piece="3"></div>
-            </div>
-          </div>
+    if (AudioContext) {
+      audioContext = new AudioContext();
+    }
+  }
 
-          <!-- BLUE HOME -->
-          <div class="home blue-home">
-            <div class="home-title">BLUE</div>
+  if (
+    audioContext &&
+    audioContext.state === "suspended"
+  ) {
+    audioContext.resume();
+  }
 
-            <div class="home-yard">
-              <div class="piece blue-piece" data-player="blue" data-piece="0"></div>
-              <div class="piece blue-piece" data-player="blue" data-piece="1"></div>
-              <div class="piece blue-piece" data-player="blue" data-piece="2"></div>
-              <div class="piece blue-piece" data-player="blue" data-piece="3"></div>
-            </div>
-          </div>
+  return audioContext;
+}
 
-          <!-- GREEN HOME -->
-          <div class="home green-home">
-            <div class="home-title">GREEN</div>
 
-            <div class="home-yard">
-              <div class="piece green-piece" data-player="green" data-piece="0"></div>
-              <div class="piece green-piece" data-player="green" data-piece="1"></div>
-              <div class="piece green-piece" data-player="green" data-piece="2"></div>
-              <div class="piece green-piece" data-player="green" data-piece="3"></div>
-            </div>
-          </div>
+/* Basic sound */
 
-          <!-- YELLOW HOME -->
-          <div class="home yellow-home">
-            <div class="home-title">YELLOW</div>
+function playTone(
+  frequency,
+  duration = 0.15,
+  type = "sine",
+  volume = 0.08
+) {
 
-            <div class="home-yard">
-              <div class="piece yellow-piece" data-player="yellow" data-piece="0"></div>
-              <div class="piece yellow-piece" data-player="yellow" data-piece="1"></div>
-              <div class="piece yellow-piece" data-player="yellow" data-piece="2"></div>
-              <div class="piece yellow-piece" data-player="yellow" data-piece="3"></div>
-            </div>
-          </div>
+  if (!soundEnabled) return;
 
-          <!-- CENTER -->
-          <div class="center-area">
-            <div class="center-triangle red-triangle"></div>
-            <div class="center-triangle blue-triangle"></div>
-            <div class="center-triangle green-triangle"></div>
-            <div class="center-triangle yellow-triangle"></div>
+  const ctx = createAudioContext();
 
-            <div class="trophy">🏆</div>
-          </div>
+  if (!ctx) return;
 
-          <!-- TRACK -->
-          <div class="track">
-            <div class="track-cell" data-position="0"></div>
-            <div class="track-cell" data-position="1"></div>
-            <div class="track-cell" data-position="2"></div>
-            <div class="track-cell" data-position="3"></div>
-            <div class="track-cell" data-position="4"></div>
-            <div class="track-cell" data-position="5"></div>
-            <div class="track-cell" data-position="6"></div>
-            <div class="track-cell" data-position="7"></div>
-            <div class="track-cell" data-position="8"></div>
-            <div class="track-cell" data-position="9"></div>
-            <div class="track-cell" data-position="10"></div>
-            <div class="track-cell" data-position="11"></div>
-            <div class="track-cell" data-position="12"></div>
-            <div class="track-cell" data-position="13"></div>
-            <div class="track-cell" data-position="14"></div>
-            <div class="track-cell" data-position="15"></div>
-            <div class="track-cell" data-position="16"></div>
-            <div class="track-cell" data-position="17"></div>
-            <div class="track-cell" data-position="18"></div>
-            <div class="track-cell" data-position="19"></div>
-            <div class="track-cell" data-position="20"></div>
-            <div class="track-cell" data-position="21"></div>
-            <div class="track-cell" data-position="22"></div>
-            <div class="track-cell" data-position="23"></div>
-            <div class="track-cell" data-position="24"></div>
-            <div class="track-cell" data-position="25"></div>
-            <div class="track-cell" data-position="26"></div>
-            <div class="track-cell" data-position="27"></div>
-            <div class="track-cell" data-position="28"></div>
-            <div class="track-cell" data-position="29"></div>
-            <div class="track-cell" data-position="30"></div>
-            <div class="track-cell" data-position="31"></div>
-            <div class="track-cell" data-position="32"></div>
-            <div class="track-cell" data-position="33"></div>
-            <div class="track-cell" data-position="34"></div>
-            <div class="track-cell" data-position="35"></div>
-            <div class="track-cell" data-position="36"></div>
-            <div class="track-cell" data-position="37"></div>
-            <div class="track-cell" data-position="38"></div>
-            <div class="track-cell" data-position="39"></div>
-          </div>
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
 
-        </div>
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
 
-      </div>
+  gain.gain.setValueAtTime(
+    volume,
+    ctx.currentTime
+  );
 
-      <!-- CONTROLS -->
-      <aside class="controls">
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    ctx.currentTime + duration
+  );
 
-        <div class="turn-card">
-          <span class="turn-label">CURRENT TURN</span>
-          <h2 id="playerName">RED PLAYER</h2>
-          <div id="turnDot" class="turn-dot red"></div>
-        </div>
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
 
-        <div class="dice-box">
+  oscillator.start();
 
-          <div id="dice" class="dice">⚀</div>
+  oscillator.stop(
+    ctx.currentTime + duration
+  );
+}
 
-          <button id="rollButton" class="roll-button">
-            🎲 ROLL DICE
-          </button>
 
-          <p id="message">
-            Roll the dice to begin!
-          </p>
+/* Dice sound */
 
-        </div>
+function diceSound() {
 
-        <button id="newGameButton" class="new-game-button">
-          🔄 NEW GAME
-        </button>
+  playTone(220, 0.08, "square", 0.05);
 
-        <div class="rules">
-          <h3>How to Play</h3>
+  setTimeout(() => {
+    playTone(330, 0.08, "square", 0.05);
+  }, 80);
 
-          <ul>
-            <li>Roll a <strong>6</strong> to bring a piece out.</li>
-            <li>Click a highlighted piece to move it.</li>
-            <li>Capture opponents by landing on them.</li>
-            <li>Get all 4 pieces home to win.</li>
-            <li>Rolling a 6 gives you another turn.</li>
-          </ul>
-        </div>
+  setTimeout(() => {
+    playTone(440, 0.12, "square", 0.05);
+  }, 160);
+}
 
-      </aside>
 
-    </section>
+/* Piece movement */
 
-    <!-- WINNER MODAL -->
-    <div id="winnerModal" class="winner-modal hidden">
+function moveSound() {
 
-      <div class="winner-card">
+  playTone(
+    500,
+    0.08,
+    "triangle",
+    0.06
+  );
+}
 
-        <div class="confetti">🎉</div>
 
-        <h2 id="winnerTitle">RED WINS!</h2>
+/* Capture sound */
 
-        <p>
-          Congratulations! You got all your pieces home.
-        </p>
+function captureSound() {
 
-        <div class="clap-text">
-          👏 👏 👏 👏 👏
-        </div>
+  playTone(
+    120,
+    0.15,
+    "sawtooth",
+    0.08
+  );
 
-        <button id="playAgainButton">
-          PLAY AGAIN
-        </button>
+  setTimeout(() => {
+    playTone(
+      70,
+      0.2,
+      "sawtooth",
+      0.05
+    );
+  }, 100);
+}
 
-      </div>
 
-    </div>
+/* Winner celebration */
 
-  </main>
+function winnerSound() {
 
-  <script src="script.js"></script>
+  if (!soundEnabled) return;
 
-</body>
-</html>
+  const notes = [
+    523,
+    659,
+    784,
+    1047,
+    1319
+  ];
+
+  notes.forEach((note, index) => {
+
+    setTimeout(() => {
+
+      playTone(
+        note,
+        0.25,
+        "triangle",
+        0.12
+      );
+
+    }, index * 180);
+
+  });
+
+  /* Clap-like sounds */
+
+  for (let i = 0; i < 8; i++) {
+
+    setTimeout(() => {
+
+      playTone(
+        90 + Math.random() * 40,
+        0.06,
+        "square",
+        0.12
+      );
+
+    }, 1000 + i * 140);
+  }
+}
+
+
+/* =========================================
+   BACKGROUND BEAT
+========================================= */
+
+function startMusic() {
+
+  if (!soundEnabled || musicPlaying) return;
+
+  createAudioContext();
+
+  musicPlaying = true;
+
+  const beat = [
+    261.63,
+    329.63,
+    392.00,
+    329.63
+  ];
+
+  let index = 0;
+
+  musicTimer = setInterval(() => {
+
+    if (!soundEnabled) return;
+
+    playTone(
+      beat[index],
+      0.18,
+      "sine",
+      0.025
+    );
+
+    index++;
+
+    if (index >= beat.length) {
+      index = 0;
+    }
+
+  }, 450);
+}
+
+
+function stopMusic() {
+
+  if (musicTimer) {
+    clearInterval(musicTimer);
+    musicTimer = null;
+  }
+
+  musicPlaying = false;
+}
+
+
+/* =========================================
+   SOUND BUTTON
+========================================= */
+
+soundToggle.addEventListener(
+  "click",
+  () => {
+
+    soundEnabled = !soundEnabled;
+
+    if (soundEnabled) {
+
+      soundToggle.textContent =
+        "🔊 Sound ON";
+
+      createAudioContext();
+
+      startMusic();
+
+      playTone(
+        600,
+        0.1,
+        "triangle",
+        0.07
+      );
+
+    } else {
+
+      soundToggle.textContent =
+        "🔇 Sound OFF";
+
+      stopMusic();
+    }
+
+  }
+);
+
+
+/* =========================================
+   UPDATE TURN
+========================================= */
+
+function updateTurn() {
+
+  const player =
+    players[currentPlayer];
+
+  playerName.textContent =
+    player.name;
+
+  turnDot.className =
+    `turn-dot ${player.color}`;
+
+}
+
+
+/* =========================================
+   ROLL DICE
+========================================= */
+
+rollButton.addEventListener(
+  "click",
+  rollDice
+);
+
+function rollDice() {
+
+  if (gameOver || waitingForPiece) {
+    return;
+  }
+
+  createAudioContext();
+
+  startMusic();
+
+  rollButton.disabled = true;
+
+  dice.classList.add("rolling");
+
+  diceSound();
+
+  let animationCount = 0;
+
+  const animation = setInterval(() => {
+
+    const temporary =
+      Math.floor(Math.random() * 6);
+
+    dice.textContent =
+      diceFaces[temporary];
+
+    animationCount++;
+
+    if (animationCount >= 8) {
+
+      clearInterval(animation);
+
+      diceValue =
+        Math.floor(Math.random() * 6) + 1;
+
+      dice.textContent =
+        diceFaces[diceValue - 1];
+
+      dice.classList.remove(
+        "rolling"
+      );
+
+      handleDiceResult();
+
+    }
+
+  }, 80);
+
+}
+
+
+/* =========================================
+   HANDLE DICE
+========================================= */
+
+function handleDiceResult() {
+
+  const player =
+    players[currentPlayer];
+
+  message.textContent =
+    `${player.name} rolled ${diceValue}.`;
+
+  if (diceValue === 6) {
+
+    message.textContent +=
+      " Choose a piece to move.";
+
+  } else {
+
+    message.textContent +=
+      " Choose a piece.";
+  }
+
+  highlightPieces();
+
+  waitingForPiece = true;
+
+}
+
+
+/* =========================================
+   HIGHLIGHT PIECES
+========================================= */
+
+function highlightPieces() {
+
+  clearHighlights();
+
+  const player =
+    players[currentPlayer];
+
+  const pieces =
+    document.querySelectorAll(
+      `.piece[data-player="${player.color}"]`
+    );
+
+  pieces.forEach((piece, index) => {
+
+    if (
+      player.pieces[index] < 57 &&
+      canMovePiece(index)
+    ) {
+
+      piece.classList.add(
+        "movable"
+      );
+
+      piece.addEventListener(
+        "click",
+        pieceClickHandler
+      );
+
+    }
+
+  });
+
+}
+
+
+/* =========================================
+   CAN MOVE
+========================================= */
+
+function canMovePiece(index) {
+
+  const position =
+    players[currentPlayer].pieces[index];
+
+  if (position === 57) {
+    return false;
+  }
+
+  if (position === 0) {
+    return diceValue === 6;
+  }
+
+  return position + diceValue <= 57;
+}
+
+
+/* =========================================
+   PIECE CLICK
+========================================= */
+
+function pieceClickHandler(event) {
+
+  const piece =
+    event.currentTarget;
+
+  const playerColor =
+    piece.dataset.player;
+
+  const pieceIndex =
+    Number(piece.dataset.piece);
+
+  const playerIndex =
+    players.findIndex(
+      player =>
+        player.color === playerColor
+    );
+
+  if (
+    playerIndex !== currentPlayer
+  ) {
+    return;
+  }
+
+  movePiece(pieceIndex);
+}
+
+
+/* =========================================
+   MOVE PIECE
+========================================= */
+
+function movePiece(index) {
+
+  const player =
+    players[currentPlayer];
+
+  const oldPosition =
+    player.pieces[index];
+
+  let newPosition;
+
+  if (oldPosition === 0) {
+
+    newPosition = 1;
+
+  } else {
+
+    newPosition =
+      oldPosition + diceValue;
+  }
+
+  player.pieces[index] =
+    newPosition;
+
+  moveSound();
+
+  clearHighlights();
+
+  waitingForPiece = false;
+
+  message.textContent =
+    `${player.name} moved piece ${index + 1}.`;
+
+  /* Check capture */
+
+  checkCapture(
+    currentPlayer,
+    index
+  );
+
+  /* Check finish */
+
+  if (newPosition >= 57) {
+
+    player.pieces[index] = 57;
+
+    player.finished++;
+
+    message.textContent =
+      `${player.name} got a piece home! 🏠`;
+
+    playTone(
+      700,
+      0.2,
+      "triangle",
+      0.08
+    );
+  }
+
+  /* Check winner */
+
+  if (player.finished >= 4) {
+
+    finishGame();
+
+    return;
+  }
+
+  updateBoard();
+
+  /* Six = another turn */
+
+  if (diceValue === 6) {
+
+    message.textContent =
+      `${player.name} rolled a 6! Roll again.`;
+
+    rollButton.disabled = false;
+
+  } else {
+
+    nextPlayer();
+
+  }
+
+}
+
+
+/* =========================================
+   CAPTURE
+========================================= */
+
+function checkCapture(
+  playerIndex,
+  pieceIndex
+) {
+
+  const player =
+    players[playerIndex];
+
+  const position =
+    player.pieces[pieceIndex];
+
+  if (
+    position <= 0 ||
+    position >= 57
+  ) {
+    return;
+  }
+
+  for (
+    let i = 0;
+    i < players.length;
+    i++
+  ) {
+
+    if (i === playerIndex) {
+      continue;
+    }
+
+    const opponent =
+      players[i];
+
+    for (
+      let j = 0;
+      j < opponent.pieces.length;
+      j++
+    ) {
+
+      const opponentPosition =
+        opponent.pieces[j];
+
+      if (
+        opponentPosition === position &&
+        opponentPosition > 0 &&
+        opponentPosition < 57
+      ) {
+
+        opponent.pieces[j] = 0;
+
+        captureSound();
+
+        message.textContent =
+          `${player.name} captured ${opponent.name}! 💥`;
+
+      }
+
+    }
+
+  }
+
+}
+
+
+/* =========================================
+   NEXT PLAYER
+========================================= */
+
+function nextPlayer() {
+
+  currentPlayer++;
+
+  if (
+    currentPlayer >= players.length
+  ) {
+    currentPlayer = 0;
+  }
+
+  diceValue = 1;
+
+  dice.textContent =
+    diceFaces[0];
+
+  updateTurn();
+
+  message.textContent =
+    `${players[currentPlayer].name}'s turn. Roll the dice.`;
+
+  rollButton.disabled = false;
+
+  waitingForPiece = false;
+
+}
+
+
+/* =========================================
+   CLEAR HIGHLIGHTS
+========================================= */
+
+function clearHighlights() {
+
+  document
+    .querySelectorAll(".piece")
+    .forEach(piece => {
+
+      piece.classList.remove(
+        "movable"
+      );
+
+      piece.removeEventListener(
+        "click",
+        pieceClickHandler
+      );
+
+    });
+
+}
+
+
+/* =========================================
+   UPDATE BOARD
+========================================= */
+
+function updateBoard() {
+
+  /*
+    This first version keeps pieces
+    visually inside their player areas.
+    The game state and movement system
+    are already working.
+  */
+
+  const allPieces =
+    document.querySelectorAll(".piece");
+
+  allPieces.forEach(piece => {
+
+    piece.classList.remove(
+      "finished-piece"
+    );
+
+  });
+
+  players.forEach(player => {
+
+    player.pieces.forEach(
+      (position, index) => {
+
+        if (position >= 57) {
+
+          const piece =
+            document.querySelector(
+              `.piece[data-player="${player.color}"][data-piece="${index}"]`
+            );
+
+          if (piece) {
+
+            piece.classList.add(
+              "finished-piece"
+            );
+
+          }
+
+        }
+
+      }
+    );
+
+  });
+
+}
+
+
+/* =========================================
+   WINNER
+========================================= */
+
+function finishGame() {
+
+  const winner =
+    players[currentPlayer];
+
+  gameOver = true;
+
+  rollButton.disabled = true;
+
+  winnerTitle.textContent =
+    `${winner.name} WINS! 🏆`;
+
+  winnerModal.classList.remove(
+    "hidden"
+  );
+
+  winnerSound();
+
+  stopMusic();
+
+}
+
+
+/* =========================================
+   NEW GAME
+========================================= */
+
+function resetGame() {
+
+  players.forEach(player => {
+
+    player.pieces =
+      [0, 0, 0, 0];
+
+    player.finished = 0;
+
+  });
+
+  currentPlayer = 0;
+
+  diceValue = 1;
+
+  waitingForPiece = false;
+
+  gameOver = false;
+
+  dice.textContent =
+    diceFaces[0];
+
+  message.textContent =
+    "Roll the dice to begin!";
+
+  rollButton.disabled = false;
+
+  winnerModal.classList.add(
+    "hidden"
+  );
+
+  clearHighlights();
+
+  updateTurn();
+
+  updateBoard();
+
+  if (soundEnabled) {
+    startMusic();
+  }
+
+}
+
+
+newGameButton.addEventListener(
+  "click",
+  resetGame
+);
+
+playAgainButton.addEventListener(
+  "click",
+  resetGame
+);
+
+
+/* =========================================
+   START GAME
+========================================= */
+
+updateTurn();
+updateBoard();
