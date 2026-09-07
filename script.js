@@ -1,80 +1,52 @@
 /* =========================================
-   NAIJA LUDO
+   LUDO GAME
+   YOU = RED + YELLOW
+   COMPUTER = GREEN + BLUE
 ========================================= */
 
 
 /* =========================================
-   ELEMENTS
+   DOM
 ========================================= */
 
 const menuScreen = document.getElementById("menuScreen");
 const gameScreen = document.getElementById("gameScreen");
 
-const computerModeBtn =
-  document.getElementById("computerModeBtn");
+const computerBtn = document.getElementById("computerBtn");
+const multiplayerBtn = document.getElementById("multiplayerBtn");
 
-const multiplayerModeBtn =
-  document.getElementById("multiplayerModeBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettings = document.getElementById("closeSettings");
 
-const settingsBtn =
-  document.getElementById("settingsBtn");
+const backBtn = document.getElementById("backBtn");
+const restartBtn = document.getElementById("restartBtn");
 
-const settingsModal =
-  document.getElementById("settingsModal");
+const board = document.getElementById("board");
+const pathLayer = document.getElementById("pathLayer");
 
-const closeSettings =
-  document.getElementById("closeSettings");
+const dice = document.getElementById("dice");
+const diceNumber = document.getElementById("diceNumber");
 
-const soundToggle =
-  document.getElementById("soundToggle");
+const diceMessage = document.getElementById("diceMessage");
+const turnText = document.getElementById("turnText");
+const modeText = document.getElementById("modeText");
 
-const soundBtn =
-  document.getElementById("soundBtn");
+const rollValue = document.getElementById("rollValue");
 
-const menuBtn =
-  document.getElementById("menuBtn");
+const redFinished = document.getElementById("redFinished");
+const yellowFinished = document.getElementById("yellowFinished");
+const computerFinished = document.getElementById("computerFinished");
 
-const rollBtn =
-  document.getElementById("rollBtn");
+const winModal = document.getElementById("winModal");
+const winnerTitle = document.getElementById("winnerTitle");
+const winnerMessage = document.getElementById("winnerMessage");
+const winnerIcon = document.getElementById("winnerIcon");
 
-const winnerModal =
-  document.getElementById("winnerModal");
+const playAgainBtn = document.getElementById("playAgainBtn");
+const menuBtn = document.getElementById("menuBtn");
 
-const winnerText =
-  document.getElementById("winnerText");
-
-const playAgainBtn =
-  document.getElementById("playAgainBtn");
-
-const backMenuBtn =
-  document.getElementById("backMenuBtn");
-
-const handText =
-  document.getElementById("handText");
-
-const modeLabel =
-  document.getElementById("modeLabel");
-
-const myScore =
-  document.getElementById("myScore");
-
-const opponentScore =
-  document.getElementById("opponentScore");
-
-const rankElement =
-  document.getElementById("rank");
-
-const winsElement =
-  document.getElementById("wins");
-
-const redCount =
-  document.getElementById("redCount");
-
-const blueCount =
-  document.getElementById("blueCount");
-
-const greenCount =
-  document.getElementById("greenCount");
+const soundToggle = document.getElementById("soundToggle");
 
 
 /* =========================================
@@ -83,107 +55,157 @@ const greenCount =
 
 let gameMode = "computer";
 
-let soundEnabled = true;
+const HUMAN_COLORS = ["red", "yellow"];
+const COMPUTER_COLORS = ["green", "blue"];
 
-let currentTeam = "human";
+const ALL_COLORS = ["red", "green", "blue", "yellow"];
 
-let diceValue = 0;
+const piecesPerColor = 4;
+
+let currentTurn = "human";
+
+let rolledNumber = null;
+
+let waitingForPiece = false;
 
 let gameOver = false;
 
-let rolling = false;
-
-let wins = 0;
-
-let rank = 0;
+let soundEnabled = true;
 
 
-/*
-  COMPUTER MODE
+/* =========================================
+   PIECE DATA
+=========================================
 
-  HUMAN:
-  RED + YELLOW
+   position:
+   -1 = inside home
+    0-51 = common board
+   52+ = colored finishing lane
+   57 = finished
+========================================= */
 
-  COMPUTER:
-  GREEN + BLUE
-*/
+let pieces = {};
 
-const teams = {
 
-  human: {
-    name: "You",
-    colors: ["red", "yellow"]
-  },
+/* =========================================
+   BOARD PATH
 
-  computer: {
-    name: "Computer",
-    colors: ["green", "blue"]
-  }
+   52 cells around the outside
+========================================= */
 
+const pathCoordinates = [
+
+  /* TOP ROW */
+  [6,0],
+  [7,0],
+  [8,0],
+  [9,0],
+  [10,0],
+  [11,0],
+  [12,0],
+
+  [12,1],
+  [12,2],
+  [13,2],
+  [14,2],
+
+  [14,3],
+  [14,4],
+  [14,5],
+
+  /* RIGHT */
+  [13,6],
+  [14,6],
+
+  [14,7],
+
+  [14,8],
+  [13,8],
+
+  [14,9],
+  [14,10],
+  [14,11],
+
+  [13,12],
+  [12,12],
+
+  [12,13],
+  [12,14],
+
+  [11,14],
+  [10,14],
+  [9,14],
+  [8,14],
+  [7,14],
+  [6,14],
+
+  /* BOTTOM LEFT */
+  [6,13],
+  [6,12],
+  [5,12],
+  [4,12],
+
+  [4,13],
+  [4,14],
+
+  [3,14],
+  [2,14],
+  [2,13],
+
+  [2,12],
+  [1,12],
+  [0,12],
+
+  [0,11],
+  [0,10],
+  [0,9],
+
+  [1,8],
+  [0,8],
+
+  [0,7],
+
+  [0,6],
+  [1,6],
+
+  [0,5],
+  [0,4],
+  [0,3],
+
+  [1,2],
+  [2,2],
+
+  [2,1],
+  [2,0],
+
+  [3,0],
+  [4,0],
+  [5,0]
+
+];
+
+
+/* Keep exactly 52 positions */
+const COMMON_PATH = pathCoordinates.slice(0, 52);
+
+
+/* =========================================
+   START POSITIONS
+========================================= */
+
+const startIndex = {
+  red: 0,
+  green: 13,
+  blue: 26,
+  yellow: 39
 };
 
 
 /* =========================================
-   PLAYER DATA
+   SAFE CELLS
 ========================================= */
 
-const colors = {
-
-  red: {
-    name: "Red",
-    start: 0,
-    css: "red-piece"
-  },
-
-  yellow: {
-    name: "Yellow",
-    start: 13,
-    css: "yellow-piece"
-  },
-
-  green: {
-    name: "Green",
-    start: 26,
-    css: "green-piece"
-  },
-
-  blue: {
-    name: "Blue",
-    start: 39,
-    css: "blue-piece"
-  }
-
-};
-
-
-/*
-  Each piece:
-
-  position:
-
-  -1 = home
-   0-51 = board
-   52 = finished
-*/
-
-const pieces = {
-
-  red: [-1, -1, -1, -1],
-
-  yellow: [-1, -1, -1, -1],
-
-  green: [-1, -1, -1, -1],
-
-  blue: [-1, -1, -1, -1]
-
-};
-
-
-/* =========================================
-   SAFE POSITIONS
-========================================= */
-
-const safePositions = [
+const safeCells = new Set([
   0,
   8,
   13,
@@ -192,175 +214,444 @@ const safePositions = [
   34,
   39,
   47
-];
+]);
 
 
 /* =========================================
-   BOARD PATH
+   FINISH LANES
 ========================================= */
 
-const boardPath = [
+const finishLanes = {
 
-  [48, 48],
-  [48, 41],
-  [48, 34],
-  [48, 27],
-  [48, 20],
-  [41, 20],
-  [34, 20],
-  [27, 20],
-  [20, 20],
-  [20, 27],
-  [20, 34],
-  [20, 41],
-  [20, 48],
+  red: [
+    [6,1],
+    [6,2],
+    [6,3],
+    [6,4],
+    [6,5],
+    [7,6]
+  ],
 
-  [27, 48],
-  [34, 48],
-  [41, 48],
+  green: [
+    [13,6],
+    [12,6],
+    [11,6],
+    [10,6],
+    [9,6],
+    [8,7]
+  ],
 
-  [48, 55],
-  [55, 55],
-  [62, 55],
-  [69, 55],
-  [76, 55],
-  [76, 48],
-  [76, 41],
-  [76, 34],
-  [76, 27],
-  [76, 20],
-  [69, 20],
-  [62, 20],
-  [55, 20],
+  blue: [
+    [8,13],
+    [8,12],
+    [8,11],
+    [8,10],
+    [8,9],
+    [7,8]
+  ],
 
-  [55, 13],
-  [55, 6],
-  [48, 6],
-  [41, 6],
-  [34, 6],
-  [27, 6],
-  [20, 6],
-  [20, 13],
-  [20, 20],
+  yellow: [
+    [1,8],
+    [2,8],
+    [3,8],
+    [4,8],
+    [5,8],
+    [6,7]
+  ]
 
-  [13, 20],
-  [6, 20],
-  [6, 27],
-  [6, 34],
-  [6, 41],
-  [13, 41],
-  [20, 41],
-  [27, 41],
-  [34, 41],
-  [41, 41],
-  [48, 41]
-
-];
+};
 
 
-/*
-  Because the visual board is made with CSS,
-  the game also maintains an internal
-  circular path.
-*/
+/* =========================================
+   HOME PIECE INITIAL POSITIONS
+========================================= */
 
-const pathCoordinates = [];
+const homePositions = {
 
-for (let i = 0; i < 52; i++) {
+  red: [
+    [2.0, 2.0],
+    [2.0, 5.0],
+    [5.0, 2.0],
+    [5.0, 5.0]
+  ],
 
-  const angle =
-    (Math.PI * 2 / 52) * i;
+  green: [
+    [10.0, 2.0],
+    [10.0, 5.0],
+    [13.0, 2.0],
+    [13.0, 5.0]
+  ],
 
-  pathCoordinates.push({
-    x: 50 + Math.cos(angle) * 36,
-    y: 50 + Math.sin(angle) * 36
+  blue: [
+    [10.0, 10.0],
+    [10.0, 13.0],
+    [13.0, 10.0],
+    [13.0, 13.0]
+  ],
+
+  yellow: [
+    [2.0, 10.0],
+    [2.0, 13.0],
+    [5.0, 10.0],
+    [5.0, 13.0]
+  ]
+
+};
+
+
+/* =========================================
+   INITIALIZE PIECES
+========================================= */
+
+function createPieces() {
+
+  pieces = {};
+
+  ALL_COLORS.forEach(color => {
+
+    pieces[color] = [];
+
+    for (let i = 0; i < piecesPerColor; i++) {
+
+      pieces[color].push({
+        id: i,
+        position: -1
+      });
+
+    }
+
   });
 
 }
 
 
 /* =========================================
-   START GAME
+   CREATE BOARD PATH
 ========================================= */
 
-computerModeBtn.addEventListener(
-  "click",
-  () => {
+function createBoard() {
 
-    gameMode = "computer";
+  pathLayer.innerHTML = "";
 
-    startGame();
+  COMMON_PATH.forEach((coord, index) => {
 
-  }
-);
+    const cell = document.createElement("div");
+
+    cell.className = "path-cell";
+
+    cell.dataset.index = index;
+
+    const x = coord[0];
+    const y = coord[1];
+
+    cell.style.left = `${x * (100 / 15)}%`;
+    cell.style.top = `${y * (100 / 15)}%`;
+
+    if (safeCells.has(index)) {
+      cell.classList.add("safe");
+    }
+
+    /* Start colors */
+    if (index === startIndex.red) {
+      cell.classList.add("start-red");
+    }
+
+    if (index === startIndex.green) {
+      cell.classList.add("start-green");
+    }
+
+    if (index === startIndex.blue) {
+      cell.classList.add("start-blue");
+    }
+
+    if (index === startIndex.yellow) {
+      cell.classList.add("start-yellow");
+    }
+
+    pathLayer.appendChild(cell);
+
+  });
 
 
-multiplayerModeBtn.addEventListener(
-  "click",
-  () => {
+  /* Colored finishing lanes */
 
-    gameMode = "multiplayer";
+  Object.keys(finishLanes).forEach(color => {
 
-    startGame();
+    finishLanes[color].forEach((coord, index) => {
 
-  }
-);
+      const cell = document.createElement("div");
+
+      cell.className = `path-cell ${color}-lane`;
+
+      cell.style.left = `${coord[0] * (100 / 15)}%`;
+      cell.style.top = `${coord[1] * (100 / 15)}%`;
+
+      pathLayer.appendChild(cell);
+
+    });
+
+  });
 
 
-function startGame() {
+  /* Center zone */
 
-  menuScreen.classList.add("hidden");
+  const center = document.createElement("div");
 
-  gameScreen.classList.remove("hidden");
+  center.className = "center-zone";
 
-  resetGame();
-
-  if (gameMode === "computer") {
-
-    modeLabel.textContent =
-      "You: Red + Yellow  |  Computer: Green + Blue";
-
-  } else {
-
-    modeLabel.textContent =
-      "Multiplayer • Friends & Family";
-
-  }
+  board.appendChild(center);
 
 }
 
 
 /* =========================================
-   RESET
+   COLOR HELPER
 ========================================= */
 
-function resetGame() {
+function getColorClass(color) {
 
-  pieces.red =
-    [-1, -1, -1, -1];
+  return `${color}-piece`;
 
-  pieces.yellow =
-    [-1, -1, -1, -1];
+}
 
-  pieces.green =
-    [-1, -1, -1, -1];
 
-  pieces.blue =
-    [-1, -1, -1, -1];
+/* =========================================
+   BOARD POSITION
+========================================= */
 
-  currentTeam = "human";
+function getCommonPosition(color, position) {
 
-  diceValue = 0;
+  const start = startIndex[color];
 
-  gameOver = false;
+  return (start + position) % 52;
 
-  rolling = false;
+}
 
-  winnerModal.classList.add("hidden");
 
-  rollBtn.disabled = false;
+/* =========================================
+   GET PIECE COORDINATES
+========================================= */
 
-  updateUI();
+function getPieceCoordinates(color, piece) {
+
+  const position = piece.position;
+
+
+  /* HOME */
+
+  if (position === -1) {
+
+    return homePositions[color][piece.id];
+
+  }
+
+
+  /* FINISHED */
+
+  if (position >= 57) {
+
+    const lane = finishLanes[color][5];
+
+    return [lane[0], lane[1]];
+
+  }
+
+
+  /* FINISHING LANE */
+
+  if (position >= 52) {
+
+    const laneIndex = position - 52;
+
+    const lane = finishLanes[color][laneIndex];
+
+    return [lane[0], lane[1]];
+
+  }
+
+
+  /* COMMON BOARD */
+
+  const commonIndex = getCommonPosition(color, position);
+
+  const coord = COMMON_PATH[commonIndex];
+
+  return [coord[0], coord[1]];
+
+}
+
+
+/* =========================================
+   RENDER PIECES
+========================================= */
+
+function renderPieces() {
+
+  document.querySelectorAll(".board-piece").forEach(el => el.remove());
+
+  document.querySelectorAll(".home-piece").forEach(el => {
+    el.style.display = "";
+  });
+
+
+  ALL_COLORS.forEach(color => {
+
+    pieces[color].forEach(piece => {
+
+      const [x, y] = getPieceCoordinates(color, piece);
+
+
+      /* Piece still inside home */
+
+      if (piece.position === -1) {
+
+        const homePiece = document.querySelector(
+          `.home-piece[data-color="${color}"][data-piece="${piece.id}"]`
+        );
+
+        if (homePiece) {
+          homePiece.style.display = "block";
+
+          if (
+            waitingForPiece &&
+            isHumanColor(color) &&
+            canMovePiece(color, piece, rolledNumber)
+          ) {
+            homePiece.classList.add("selectable");
+          } else {
+            homePiece.classList.remove("selectable");
+          }
+
+        }
+
+        return;
+      }
+
+
+      /* Board piece */
+
+      const element = document.createElement("button");
+
+      element.className = `board-piece ${getColorClass(color)}`;
+
+      element.dataset.color = color;
+      element.dataset.piece = piece.id;
+
+      element.style.left = `${((x + .5) / 15) * 100}%`;
+      element.style.top = `${((y + .5) / 15) * 100}%`;
+
+
+      if (
+        waitingForPiece &&
+        isHumanColor(color) &&
+        canMovePiece(color, piece, rolledNumber)
+      ) {
+        element.classList.add("selectable");
+      }
+
+
+      element.addEventListener("click", () => {
+
+        if (gameOver) return;
+
+        if (currentTurn !== "human") return;
+
+        if (!waitingForPiece) return;
+
+        moveSelectedPiece(color, piece.id);
+
+      });
+
+
+      board.appendChild(element);
+
+    });
+
+  });
+
+
+  updateStats();
+
+}
+
+
+/* =========================================
+   HUMAN COLOR?
+========================================= */
+
+function isHumanColor(color) {
+
+  if (gameMode === "computer") {
+    return HUMAN_COLORS.includes(color);
+  }
+
+  return true;
+
+}
+
+
+/* =========================================
+   VALID MOVE
+========================================= */
+
+function canMovePiece(color, piece, diceValue) {
+
+  if (diceValue === null) {
+    return false;
+  }
+
+
+  /* Finished pieces cannot move */
+
+  if (piece.position >= 57) {
+    return false;
+  }
+
+
+  /* Home */
+
+  if (piece.position === -1) {
+
+    return diceValue === 6;
+
+  }
+
+
+  /* Normal movement */
+
+  const newPosition = piece.position + diceValue;
+
+  return newPosition <= 57;
+
+}
+
+
+/* =========================================
+   VALID MOVES
+========================================= */
+
+function getValidMoves(colors, diceValue) {
+
+  const moves = [];
+
+  colors.forEach(color => {
+
+    pieces[color].forEach(piece => {
+
+      if (canMovePiece(color, piece, diceValue)) {
+
+        moves.push({
+          color,
+          id: piece.id
+        });
+
+      }
+
+    });
+
+  });
+
+  return moves;
 
 }
 
@@ -369,390 +660,191 @@ function resetGame() {
    ROLL DICE
 ========================================= */
 
-rollBtn.addEventListener(
-  "click",
-  rollDice
-);
-
+dice.addEventListener("click", rollDice);
 
 async function rollDice() {
 
-  if (rolling || gameOver) {
-    return;
-  }
+  if (gameOver) return;
 
-  rolling = true;
+  if (currentTurn !== "human") return;
 
-  rollBtn.disabled = true;
+  if (waitingForPiece) return;
 
-  playDiceSound();
 
-  const animationTime = 650;
+  playSound("roll");
 
-  const startTime = Date.now();
 
-  while (
-    Date.now() - startTime <
-    animationTime
-  ) {
+  dice.classList.remove("rolling");
 
-    const fake =
+  void dice.offsetWidth;
+
+  dice.classList.add("rolling");
+
+
+  /* Dice animation */
+
+  for (let i = 0; i < 7; i++) {
+
+    diceNumber.textContent =
       Math.floor(Math.random() * 6) + 1;
 
-    showDice(fake);
-
-    await wait(80);
+    await wait(70);
 
   }
 
-  diceValue =
+
+  rolledNumber =
     Math.floor(Math.random() * 6) + 1;
 
-  showDice(diceValue);
 
-  updateCounter();
+  diceNumber.textContent = rolledNumber;
 
-  const available =
-    getAvailableMoves(currentTeam, diceValue);
+  rollValue.textContent = rolledNumber;
 
-  if (available.length === 0) {
+  diceMessage.textContent =
+    `You rolled ${rolledNumber}`;
 
-    await wait(700);
 
-    finishTurn();
+  const validMoves =
+    getValidMoves(HUMAN_COLORS, rolledNumber);
 
-    return;
 
-  }
+  /* No move */
 
-  highlightAvailablePieces(available);
+  if (validMoves.length === 0) {
 
-  if (
-    gameMode === "computer" &&
-    currentTeam === "computer"
-  ) {
+    waitingForPiece = false;
 
-    await wait(800);
+    diceMessage.textContent =
+      `You rolled ${rolledNumber}. No move available.`;
 
-    computerMove(available);
+    await wait(1000);
 
-  } else {
+    if (rolledNumber === 6) {
 
-    rolling = false;
+      diceMessage.textContent =
+        "You rolled a 6, but no piece can move. Roll again.";
 
-    rollBtn.disabled = true;
+      rolledNumber = null;
 
-  }
+      rollValue.textContent = "-";
 
-}
-
-
-/* =========================================
-   SHOW DICE
-========================================= */
-
-function showDice(value) {
-
-  const dice1 =
-    document.getElementById("dice1");
-
-  const dice2 =
-    document.getElementById("dice2");
-
-  dice1.innerHTML =
-    `<span>${diceSymbol(value)}</span>`;
-
-  dice2.innerHTML =
-    `<span>${diceSymbol(value)}</span>`;
-
-}
-
-
-function diceSymbol(value) {
-
-  const symbols = {
-
-    1: "●",
-
-    2: "••",
-
-    3: "•••",
-
-    4: "••••",
-
-    5: "•••••",
-
-    6: "••••••"
-
-  };
-
-  return symbols[value];
-
-}
-
-
-/* =========================================
-   AVAILABLE MOVES
-========================================= */
-
-function getAvailableMoves(
-  team,
-  dice
-) {
-
-  const available = [];
-
-  const teamColors =
-    gameMode === "computer"
-      ? teams[team].colors
-      : getMultiplayerColors(team);
-
-  teamColors.forEach(color => {
-
-    pieces[color].forEach(
-      (position, index) => {
-
-        if (
-          canMove(
-            color,
-            index,
-            dice
-          )
-        ) {
-
-          available.push({
-            color,
-            index
-          });
-
-        }
-
-      }
-    );
-
-  });
-
-  return available;
-
-}
-
-
-/* =========================================
-   MULTIPLAYER COLORS
-========================================= */
-
-function getMultiplayerColors(team) {
-
-  if (team === "human") {
-
-    return ["red"];
-
-  }
-
-  if (team === "yellow") {
-
-    return ["yellow"];
-
-  }
-
-  if (team === "green") {
-
-    return ["green"];
-
-  }
-
-  return ["blue"];
-
-}
-
-
-/* =========================================
-   CAN MOVE
-========================================= */
-
-function canMove(
-  color,
-  index,
-  dice
-) {
-
-  const position =
-    pieces[color][index];
-
-  if (position === 52) {
-    return false;
-  }
-
-  if (position === -1) {
-
-    return dice === 6;
-
-  }
-
-  return position + dice <= 52;
-
-}
-
-
-/* =========================================
-   HIGHLIGHT
-========================================= */
-
-function highlightAvailablePieces(
-  available
-) {
-
-  clearHighlights();
-
-  available.forEach(move => {
-
-    const selector =
-      `[data-color="${move.color}"][data-piece="${move.index}"]`;
-
-    const element =
-      document.querySelector(selector);
-
-    if (element) {
-
-      element.classList.add(
-        "active-piece"
-      );
-
-      element.onclick =
-        () => {
-
-          if (rolling) return;
-
-          makeMove(
-            move.color,
-            move.index
-          );
-
-        };
+      return;
 
     }
 
-  });
+    endHumanTurn();
 
-}
+    return;
+
+  }
 
 
-function clearHighlights() {
+  /* There is a move */
 
-  document
-    .querySelectorAll(".active-piece")
-    .forEach(element => {
+  waitingForPiece = true;
 
-      element.classList.remove(
-        "active-piece"
-      );
+  diceMessage.textContent =
+    `You rolled ${rolledNumber}. Choose a piece.`;
 
-      element.onclick = null;
-
-    });
+  renderPieces();
 
 }
 
 
 /* =========================================
-   MAKE MOVE
+   MOVE SELECTED PIECE
 ========================================= */
 
-async function makeMove(
-  color,
-  index
-) {
+async function moveSelectedPiece(color, pieceId) {
 
-  if (
-    gameOver ||
-    diceValue === 0
-  ) {
+  if (!waitingForPiece) return;
 
+  const piece = pieces[color][pieceId];
+
+  if (!canMovePiece(color, piece, rolledNumber)) {
     return;
-
   }
 
-  const oldPosition =
-    pieces[color][index];
 
-  clearHighlights();
+  waitingForPiece = false;
 
-  rolling = true;
+  clearSelectablePieces();
 
-  /*
-    Leaving home
-  */
 
-  if (oldPosition === -1) {
+  /* Move piece */
 
-    if (diceValue === 6) {
+  if (piece.position === -1) {
 
-      pieces[color][index] = 0;
-
-    }
+    piece.position = 0;
 
   } else {
 
-    pieces[color][index] =
-      oldPosition + diceValue;
+    piece.position += rolledNumber;
 
   }
 
 
-  playMoveSound();
+  playSound("move");
 
-  updateUI();
+  renderPieces();
 
-  await wait(450);
+  await wait(350);
 
-  /*
-    Capture
-  */
 
-  captureOpponents(
-    color,
-    index
-  );
+  /* Capture */
 
-  updateUI();
+  if (piece.position >= 0 && piece.position < 52) {
 
-  /*
-    Winner?
-  */
+    captureOpponents(color, piece);
 
-  if (checkWinner(currentTeam)) {
+  }
 
-    finishGame(
-      currentTeam
-    );
+
+  renderPieces();
+
+
+  /* Finished */
+
+  if (piece.position >= 57) {
+
+    piece.position = 57;
+
+    playSound("finish");
+
+    renderPieces();
+
+  }
+
+
+  /* Check winner */
+
+  if (checkHumanWinner()) {
+
+    showWinner("YOU WIN!");
 
     return;
 
   }
 
 
-  /*
-    Six gives another turn
-  */
+  /* Six gives another turn */
 
-  if (diceValue === 6) {
+  if (rolledNumber === 6) {
 
-    diceValue = 0;
+    diceMessage.textContent =
+      "You rolled a 6. Roll again!";
 
-    rolling = false;
+    rolledNumber = null;
 
-    rollBtn.disabled = false;
-
-    handText.textContent =
-      getTeamName(currentTeam) +
-      " — Roll again";
+    rollValue.textContent = "-";
 
     return;
 
   }
 
 
-  finishTurn();
+  endHumanTurn();
 
 }
 
@@ -761,400 +853,526 @@ async function makeMove(
    CAPTURE
 ========================================= */
 
-function captureOpponents(
-  color,
-  index
-) {
+function captureOpponents(color, movedPiece) {
 
-  const position =
-    pieces[color][index];
+  const globalPosition =
+    getCommonPosition(color, movedPiece.position);
 
-  if (
-    position < 0 ||
-    position > 51
-  ) {
 
+  if (safeCells.has(globalPosition)) {
     return;
-
-  }
-
-  if (
-    safePositions.includes(position)
-  ) {
-
-    return;
-
   }
 
 
-  Object.keys(pieces).forEach(
-    opponentColor => {
+  ALL_COLORS.forEach(enemyColor => {
 
-      if (
-        opponentColor === color
-      ) {
+    if (enemyColor === color) {
+      return;
+    }
+
+
+    pieces[enemyColor].forEach(enemyPiece => {
+
+      if (enemyPiece.position < 0) {
         return;
       }
 
-      pieces[opponentColor]
-        .forEach(
-          (enemyPosition, enemyIndex) => {
+      if (enemyPiece.position >= 52) {
+        return;
+      }
 
-            if (
-              enemyPosition === position
-            ) {
 
-              pieces[
-                opponentColor
-              ][enemyIndex] = -1;
-
-              playCaptureSound();
-
-            }
-
-          }
+      const enemyGlobal =
+        getCommonPosition(
+          enemyColor,
+          enemyPiece.position
         );
 
-    }
-  );
+
+      if (enemyGlobal === globalPosition) {
+
+        enemyPiece.position = -1;
+
+        playSound("capture");
+
+      }
+
+    });
+
+  });
 
 }
 
 
 /* =========================================
-   TURN
+   CLEAR SELECTION
 ========================================= */
 
-function finishTurn() {
+function clearSelectablePieces() {
 
-  clearHighlights();
+  document
+    .querySelectorAll(".selectable")
+    .forEach(el => {
 
-  diceValue = 0;
+      el.classList.remove("selectable");
 
-  rolling = false;
-
-  if (gameMode === "computer") {
-
-    currentTeam =
-      currentTeam === "human"
-        ? "computer"
-        : "human";
-
-  } else {
-
-    const order =
-      [
-        "human",
-        "yellow",
-        "green",
-        "blue"
-      ];
-
-    const currentIndex =
-      order.indexOf(currentTeam);
-
-    currentTeam =
-      order[
-        (currentIndex + 1) %
-        order.length
-      ];
-
-  }
-
-
-  updateUI();
-
-  rollBtn.disabled =
-    gameMode === "computer" &&
-    currentTeam === "computer";
-
-  if (
-    gameMode === "computer" &&
-    currentTeam === "computer"
-  ) {
-
-    computerTurn();
-
-  }
+    });
 
 }
 
 
 /* =========================================
-   COMPUTER
+   END HUMAN TURN
+========================================= */
+
+async function endHumanTurn() {
+
+  rolledNumber = null;
+
+  rollValue.textContent = "-";
+
+  waitingForPiece = false;
+
+  clearSelectablePieces();
+
+  currentTurn = "computer";
+
+  updateTurnDisplay();
+
+  diceMessage.textContent =
+    "Computer is thinking...";
+
+  await wait(900);
+
+  computerTurn();
+
+}
+
+
+/* =========================================
+   COMPUTER TURN
 ========================================= */
 
 async function computerTurn() {
 
-  await wait(900);
-
   if (gameOver) return;
 
-  rollDice();
 
-}
+  const value =
+    Math.floor(Math.random() * 6) + 1;
 
 
-async function computerMove(
-  available
-) {
+  rolledNumber = value;
 
-  if (
-    !available ||
-    available.length === 0
-  ) {
+  diceNumber.textContent = value;
 
-    finishTurn();
+  rollValue.textContent = value;
+
+  diceMessage.textContent =
+    `Computer rolled ${value}`;
+
+
+  playSound("roll");
+
+
+  const validMoves =
+    getValidMoves(COMPUTER_COLORS, value);
+
+
+  if (validMoves.length === 0) {
+
+    await wait(900);
+
+    if (value === 6) {
+
+      diceMessage.textContent =
+        "Computer rolled a 6 and gets another roll.";
+
+      await wait(600);
+
+      computerTurn();
+
+      return;
+
+    }
+
+
+    currentTurn = "human";
+
+    rolledNumber = null;
+
+    rollValue.textContent = "-";
+
+    updateTurnDisplay();
+
+    diceMessage.textContent =
+      "Your turn. Tap the dice.";
 
     return;
 
   }
 
 
-  /*
-    Prefer a capture.
-  */
+  /* Computer selects a move */
 
-  let selected =
-    available[
-      Math.floor(
-        Math.random() *
-        available.length
-      )
-    ];
+  const selected =
+    chooseComputerMove(validMoves, value);
 
 
-  /*
-    Prefer piece already on board.
-  */
+  await wait(900);
 
-  const boardPieces =
-    available.filter(
-      move =>
-        pieces[
-          move.color
-        ][move.index] >= 0
-    );
-
-  if (boardPieces.length) {
-
-    selected =
-      boardPieces[
-        Math.floor(
-          Math.random() *
-          boardPieces.length
-        )
-      ];
-
-  }
-
-
-  await wait(600);
-
-  makeMove(
+  moveComputerPiece(
     selected.color,
-    selected.index
+    selected.id,
+    value
   );
 
 }
 
 
 /* =========================================
-   WINNER
+   COMPUTER AI
 ========================================= */
 
-function checkWinner(team) {
-
-  const teamColors =
-    gameMode === "computer"
-      ? teams[team].colors
-      : getMultiplayerColors(team);
-
-  let completed = 0;
-
-  teamColors.forEach(color => {
-
-    pieces[color].forEach(position => {
-
-      if (position === 52) {
-
-        completed++;
-
-      }
-
-    });
-
-  });
+function chooseComputerMove(validMoves, diceValue) {
 
   /*
-    In computer mode a team has 8 pieces.
-    Multiplayer has 4 pieces.
+    Priority:
+    1. Finish a piece
+    2. Capture
+    3. Bring piece out on 6
+    4. Random
   */
 
-  const target =
-    gameMode === "computer"
-      ? 8
-      : 4;
 
-  return completed === target;
+  /* Finish */
 
-}
+  for (const move of validMoves) {
 
+    const piece =
+      pieces[move.color][move.id];
 
-function finishGame(team) {
+    if (
+      piece.position >= 0 &&
+      piece.position + diceValue >= 57
+    ) {
 
-  gameOver = true;
-
-  clearHighlights();
-
-  playWinSound();
-
-  if (team === "human") {
-
-    wins++;
-
-    rank++;
-
-    winnerText.textContent =
-      "You Win! 🏆";
-
-  } else {
-
-    winnerText.textContent =
-      getTeamName(team) +
-      " Wins!";
-
-  }
-
-  updateStats();
-
-  setTimeout(() => {
-
-    winnerModal.classList.remove(
-      "hidden"
-    );
-
-  }, 400);
-
-}
-
-
-/* =========================================
-   UI
-========================================= */
-
-function updateUI() {
-
-  updatePieces();
-
-  updateStats();
-
-  if (gameMode === "computer") {
-
-    if (currentTeam === "human") {
-
-      handText.textContent =
-        "☝ Your Turn";
-
-    } else {
-
-      handText.textContent =
-        "🤖 Computer's Turn";
+      return move;
 
     }
 
-  } else {
+  }
 
-    handText.textContent =
-      getTeamName(currentTeam) +
-      "'s Turn";
+
+  /* Capture */
+
+  for (const move of validMoves) {
+
+    const piece =
+      pieces[move.color][move.id];
+
+    let newPosition;
+
+
+    if (piece.position === -1) {
+      newPosition = 0;
+    } else {
+      newPosition =
+        piece.position + diceValue;
+    }
+
+
+    if (newPosition < 52) {
+
+      const globalPosition =
+        getCommonPosition(
+          move.color,
+          newPosition
+        );
+
+
+      if (!safeCells.has(globalPosition)) {
+
+        for (const enemyColor of HUMAN_COLORS) {
+
+          for (
+            const enemyPiece
+            of pieces[enemyColor]
+          ) {
+
+            if (
+              enemyPiece.position >= 0 &&
+              enemyPiece.position < 52
+            ) {
+
+              const enemyPosition =
+                getCommonPosition(
+                  enemyColor,
+                  enemyPiece.position
+                );
+
+
+              if (
+                enemyPosition === globalPosition
+              ) {
+
+                return move;
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+
+    }
 
   }
 
+
+  /* Bring piece out */
+
+  if (diceValue === 6) {
+
+    for (const move of validMoves) {
+
+      const piece =
+        pieces[move.color][move.id];
+
+      if (piece.position === -1) {
+        return move;
+      }
+
+    }
+
+  }
+
+
+  return validMoves[
+    Math.floor(
+      Math.random() * validMoves.length
+    )
+  ];
+
 }
 
+
+/* =========================================
+   COMPUTER MOVE
+========================================= */
+
+async function moveComputerPiece(
+  color,
+  pieceId,
+  diceValue
+) {
+
+  const piece =
+    pieces[color][pieceId];
+
+
+  if (piece.position === -1) {
+
+    piece.position = 0;
+
+  } else {
+
+    piece.position += diceValue;
+
+  }
+
+
+  playSound("move");
+
+  renderPieces();
+
+  await wait(400);
+
+
+  if (
+    piece.position >= 0 &&
+    piece.position < 52
+  ) {
+
+    captureOpponents(color, piece);
+
+  }
+
+
+  if (piece.position >= 57) {
+
+    piece.position = 57;
+
+    playSound("finish");
+
+  }
+
+
+  renderPieces();
+
+
+  /* Computer winner */
+
+  if (checkComputerWinner()) {
+
+    showWinner("COMPUTER WINS!");
+
+    return;
+
+  }
+
+
+  /* Six = another turn */
+
+  if (diceValue === 6) {
+
+    diceMessage.textContent =
+      "Computer rolled a 6. Computer rolls again.";
+
+    await wait(700);
+
+    computerTurn();
+
+    return;
+
+  }
+
+
+  /* Human */
+
+  currentTurn = "human";
+
+  rolledNumber = null;
+
+  rollValue.textContent = "-";
+
+  updateTurnDisplay();
+
+  diceMessage.textContent =
+    "Your turn. Tap the center dice.";
+
+}
+
+
+/* =========================================
+   WINNER CHECK
+========================================= */
+
+function checkHumanWinner() {
+
+  const finishedRed =
+    pieces.red.filter(
+      p => p.position >= 57
+    ).length;
+
+  const finishedYellow =
+    pieces.yellow.filter(
+      p => p.position >= 57
+    ).length;
+
+
+  /*
+    You own 8 pieces total:
+    4 red + 4 yellow.
+  */
+
+  return (
+    finishedRed === 4 &&
+    finishedYellow === 4
+  );
+
+}
+
+
+function checkComputerWinner() {
+
+  const finishedGreen =
+    pieces.green.filter(
+      p => p.position >= 57
+    ).length;
+
+  const finishedBlue =
+    pieces.blue.filter(
+      p => p.position >= 57
+    ).length;
+
+
+  /*
+    Computer owns:
+    4 green + 4 blue.
+  */
+
+  return (
+    finishedGreen === 4 &&
+    finishedBlue === 4
+  );
+
+}
+
+
+/* =========================================
+   UPDATE STATS
+========================================= */
 
 function updateStats() {
 
-  rankElement.textContent =
-    rank;
+  const red =
+    pieces.red.filter(
+      p => p.position >= 57
+    ).length;
 
-  winsElement.textContent =
-    wins;
+  const yellow =
+    pieces.yellow.filter(
+      p => p.position >= 57
+    ).length;
 
-  const myFinished =
-    countFinished(
-      teams.human.colors
-    );
+  const green =
+    pieces.green.filter(
+      p => p.position >= 57
+    ).length;
 
-  const opponentFinished =
-    countFinished(
-      teams.computer.colors
-    );
-
-  myScore.textContent =
-    `Me: ${myFinished}`;
-
-  opponentScore.textContent =
-    `Opponent: ${opponentFinished}`;
-
-}
+  const blue =
+    pieces.blue.filter(
+      p => p.position >= 57
+    ).length;
 
 
-function countFinished(
-  colorList
-) {
+  redFinished.textContent =
+    `${red}/4`;
 
-  let count = 0;
+  yellowFinished.textContent =
+    `${yellow}/4`;
 
-  colorList.forEach(color => {
-
-    pieces[color].forEach(position => {
-
-      if (position === 52) {
-
-        count++;
-
-      }
-
-    });
-
-  });
-
-  return count;
+  computerFinished.textContent =
+    `${green + blue}/8`;
 
 }
 
 
-function getTeamName(team) {
+/* =========================================
+   TURN DISPLAY
+========================================= */
 
-  if (team === "human") {
+function updateTurnDisplay() {
 
-    return "You";
+  if (currentTurn === "human") {
 
-  }
+    turnText.textContent =
+      "YOUR TURN";
 
-  if (team === "computer") {
+    modeText.textContent =
+      "You: Red + Yellow";
 
-    return "Computer";
+  } else {
 
-  }
+    turnText.textContent =
+      "COMPUTER TURN";
 
-  if (team === "yellow") {
-
-    return "Player 2";
-
-  }
-
-  if (team === "green") {
-
-    return "Player 3";
-
-  }
-
-  if (team === "blue") {
-
-    return "Player 4";
+    modeText.textContent =
+      "Computer: Green + Blue";
 
   }
 
@@ -1162,115 +1380,109 @@ function getTeamName(team) {
 
 
 /* =========================================
-   PIECE DISPLAY
+   WIN SCREEN
 ========================================= */
 
-function updatePieces() {
+function showWinner(winner) {
 
-  Object.keys(pieces).forEach(color => {
+  gameOver = true;
 
-    pieces[color].forEach(
-      (position, index) => {
+  playSound("win");
 
-        const element =
-          document.querySelector(
-            `[data-color="${color}"][data-piece="${index}"]`
-          );
 
-        if (!element) return;
+  if (winner === "YOU WIN!") {
 
-        /*
-          Home
-        */
+    winnerIcon.textContent = "🏆";
 
-        if (position === -1) {
+    winnerTitle.textContent =
+      "YOU WIN!";
 
-          element.style.display =
-            "block";
+    winnerMessage.textContent =
+      "Red + Yellow defeated Green + Blue.";
 
-          return;
+  } else {
 
-        }
+    winnerIcon.textContent = "🤖";
 
-        /*
-          Finished
-        */
+    winnerTitle.textContent =
+      "COMPUTER WINS!";
 
-        if (position === 52) {
+    winnerMessage.textContent =
+      "Green + Blue finished all their pieces.";
 
-          element.style.display =
-            "none";
+  }
 
-          return;
 
-        }
-
-        /*
-          Board position.
-          For the prototype we place the
-          piece around a circular board path.
-        */
-
-        const point =
-          pathCoordinates[
-            position % 52
-          ];
-
-        element.style.position =
-          "absolute";
-
-        element.style.left =
-          point.x + "%";
-
-        element.style.top =
-          point.y + "%";
-
-        element.style.transform =
-          "translate(-50%, -50%)";
-
-        element.style.width =
-          "6%";
-
-        element.style.height =
-          "6%";
-
-        element.style.zIndex =
-          "50";
-
-        element.style.display =
-          "block";
-
-      }
-    );
-
-  });
+  winModal.classList.add("active");
 
 }
 
 
 /* =========================================
-   COUNTERS
+   START COMPUTER GAME
 ========================================= */
 
-function updateCounter() {
+computerBtn.addEventListener("click", () => {
 
-  if (diceValue === 0) return;
+  gameMode = "computer";
 
-  if (
-    currentTeam === "human"
-  ) {
+  startGame();
 
-    redCount.textContent =
-      diceValue;
+});
 
-  }
 
-  if (
-    currentTeam === "computer"
-  ) {
+/* =========================================
+   MULTIPLAYER
+========================================= */
 
-    greenCount.textContent =
-      diceValue;
+multiplayerBtn.addEventListener("click", () => {
+
+  gameMode = "multiplayer";
+
+  startGame();
+
+});
+
+
+/* =========================================
+   START GAME
+========================================= */
+
+function startGame() {
+
+  menuScreen.classList.remove("active");
+
+  gameScreen.classList.add("active");
+
+  winModal.classList.remove("active");
+
+  gameOver = false;
+
+  currentTurn = "human";
+
+  rolledNumber = null;
+
+  waitingForPiece = false;
+
+  createPieces();
+
+  createBoard();
+
+  updateTurnDisplay();
+
+  renderPieces();
+
+  rollValue.textContent = "-";
+
+  diceNumber.textContent = "1";
+
+  diceMessage.textContent =
+    "Your turn. Tap the center dice.";
+
+  if (gameMode === "multiplayer") {
+
+    modeText.textContent =
+      "4 Human Players";
 
   }
 
@@ -1278,141 +1490,80 @@ function updateCounter() {
 
 
 /* =========================================
-   MENU
+   RESTART
 ========================================= */
 
-menuBtn.addEventListener(
-  "click",
-  () => {
+restartBtn.addEventListener("click", () => {
 
-    gameScreen.classList.add(
-      "hidden"
-    );
+  startGame();
 
-    menuScreen.classList.remove(
-      "hidden"
-    );
+});
 
-    winnerModal.classList.add(
-      "hidden"
-    );
 
-  }
-);
+playAgainBtn.addEventListener("click", () => {
+
+  startGame();
+
+});
 
 
 /* =========================================
-   PLAY AGAIN
+   MAIN MENU
 ========================================= */
 
-playAgainBtn.addEventListener(
-  "click",
-  () => {
+backBtn.addEventListener("click", () => {
 
-    winnerModal.classList.add(
-      "hidden"
-    );
+  gameScreen.classList.remove("active");
 
-    resetGame();
+  menuScreen.classList.add("active");
 
-  }
-);
+});
 
 
-backMenuBtn.addEventListener(
-  "click",
-  () => {
+menuBtn.addEventListener("click", () => {
 
-    winnerModal.classList.add(
-      "hidden"
-    );
+  winModal.classList.remove("active");
 
-    gameScreen.classList.add(
-      "hidden"
-    );
+  gameScreen.classList.remove("active");
 
-    menuScreen.classList.remove(
-      "hidden"
-    );
+  menuScreen.classList.add("active");
 
-  }
-);
+});
 
 
 /* =========================================
    SETTINGS
 ========================================= */
 
-settingsBtn.addEventListener(
-  "click",
-  () => {
+settingsBtn.addEventListener("click", () => {
 
-    settingsModal.classList.remove(
-      "hidden"
-    );
+  settingsModal.classList.add("active");
 
-  }
-);
+});
 
 
-closeSettings.addEventListener(
-  "click",
-  () => {
+closeSettings.addEventListener("click", () => {
 
-    settingsModal.classList.add(
-      "hidden"
-    );
+  settingsModal.classList.remove("active");
 
-  }
-);
+});
+
+
+soundToggle.addEventListener("change", () => {
+
+  soundEnabled = soundToggle.checked;
+
+});
 
 
 /* =========================================
-   SOUND
-========================================= */
-
-soundToggle.addEventListener(
-  "change",
-  () => {
-
-    soundEnabled =
-      soundToggle.checked;
-
-    soundBtn.textContent =
-      soundEnabled
-        ? "🔊"
-        : "🔇";
-
-  }
-);
-
-
-soundBtn.addEventListener(
-  "click",
-  () => {
-
-    soundEnabled =
-      !soundEnabled;
-
-    soundToggle.checked =
-      soundEnabled;
-
-    soundBtn.textContent =
-      soundEnabled
-        ? "🔊"
-        : "🔇";
-
-  }
-);
-
-
-/* =========================================
-   AUDIO ENGINE
+   SOUND ENGINE
 ========================================= */
 
 let audioContext = null;
 
-function getAudio() {
+
+function getAudioContext() {
 
   if (!audioContext) {
 
@@ -1429,209 +1580,155 @@ function getAudio() {
 }
 
 
-function tone(
-  frequency,
-  duration,
-  type = "sine",
-  volume = .08
-) {
+function playSound(type) {
 
   if (!soundEnabled) return;
 
-  const audio =
-    getAudio();
 
-  const oscillator =
-    audio.createOscillator();
+  try {
 
-  const gain =
-    audio.createGain();
+    const ctx = getAudioContext();
 
-  oscillator.type =
-    type;
+    const oscillator =
+      ctx.createOscillator();
 
-  oscillator.frequency.value =
-    frequency;
-
-  gain.gain.value =
-    volume;
-
-  oscillator.connect(gain);
-
-  gain.connect(
-    audio.destination
-  );
-
-  oscillator.start();
-
-  gain.gain.exponentialRampToValueAtTime(
-    .001,
-    audio.currentTime + duration
-  );
-
-  oscillator.stop(
-    audio.currentTime + duration
-  );
-
-}
+    const gain =
+      ctx.createGain();
 
 
-function playDiceSound() {
+    oscillator.connect(gain);
 
-  tone(
-    300,
-    .08,
-    "square",
-    .05
-  );
-
-  setTimeout(
-    () => tone(
-      430,
-      .08,
-      "square",
-      .05
-    ),
-    90
-  );
-
-  setTimeout(
-    () => tone(
-      580,
-      .1,
-      "square",
-      .05
-    ),
-    180
-  );
-
-}
+    gain.connect(ctx.destination);
 
 
-function playMoveSound() {
-
-  tone(
-    650,
-    .08,
-    "triangle",
-    .06
-  );
-
-}
+    let frequency = 300;
+    let duration = .12;
 
 
-function playCaptureSound() {
+    if (type === "roll") {
 
-  tone(
-    180,
-    .18,
-    "sawtooth",
-    .08
-  );
-
-}
-
-
-function playWinSound() {
-
-  if (!soundEnabled) return;
-
-  const notes = [
-    523,
-    659,
-    784,
-    1046
-  ];
-
-  notes.forEach(
-    (note, index) => {
-
-      setTimeout(
-        () => tone(
-          note,
-          .25,
-          "triangle",
-          .1
-        ),
-        index * 180
-      );
+      frequency = 250;
+      duration = .08;
 
     }
-  );
 
-  /*
-    Clap-like sounds
-  */
+    if (type === "move") {
 
-  setTimeout(
-    () => tone(
-      150,
-      .08,
-      "square",
-      .12
-    ),
-    800
-  );
+      frequency = 420;
+      duration = .1;
 
-  setTimeout(
-    () => tone(
-      150,
-      .08,
-      "square",
-      .12
-    ),
-    950
-  );
+    }
+
+    if (type === "capture") {
+
+      frequency = 180;
+      duration = .2;
+
+    }
+
+    if (type === "finish") {
+
+      frequency = 650;
+      duration = .25;
+
+    }
+
+    if (type === "win") {
+
+      frequency = 850;
+      duration = .8;
+
+    }
+
+
+    oscillator.frequency.value =
+      frequency;
+
+    oscillator.type = "sine";
+
+
+    gain.gain.setValueAtTime(
+      .001,
+      ctx.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .2,
+      ctx.currentTime + .02
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .001,
+      ctx.currentTime + duration
+    );
+
+
+    oscillator.start();
+
+    oscillator.stop(
+      ctx.currentTime + duration
+    );
+
+  } catch (error) {
+
+    console.log("Audio unavailable");
+
+  }
 
 }
 
 
 /* =========================================
-   BACKGROUND BEAT
-========================================= */
-
-let beatTimer = null;
-
-function startBeat() {
-
-  if (!soundEnabled) return;
-
-  if (beatTimer) return;
-
-  beatTimer =
-    setInterval(() => {
-
-      tone(
-        90,
-        .06,
-        "sine",
-        .025
-      );
-
-    }, 850);
-
-}
-
-
-/* =========================================
-   HELPERS
+   UTILITY
 ========================================= */
 
 function wait(ms) {
 
-  return new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        ms
-      )
-  );
+  return new Promise(resolve => {
+
+    setTimeout(resolve, ms);
+
+  });
 
 }
 
 
 /* =========================================
-   START
+   HOME PIECE CLICK HANDLERS
 ========================================= */
 
-updateUI();
+document
+  .querySelectorAll(".home-piece")
+  .forEach(pieceElement => {
+
+    pieceElement.addEventListener(
+      "click",
+      () => {
+
+        if (!waitingForPiece) return;
+
+        if (currentTurn !== "human") return;
+
+
+        const color =
+          pieceElement.dataset.color;
+
+        const id =
+          Number(
+            pieceElement.dataset.piece
+          );
+
+
+        moveSelectedPiece(color, id);
+
+      }
+    );
+
+  });
+
+
+/* =========================================
+   INITIAL STATE
+========================================= */
+
+createPieces();
