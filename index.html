@@ -2,374 +2,228 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Naija Ludo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ludo Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- =========================
-       MAIN MENU
-  ========================== -->
+  <!-- MENU -->
+  <section id="menuScreen" class="screen active">
+    <div class="menu-card">
+      <div class="logo">LUDO</div>
+      <p class="subtitle">Classic Board Game</p>
 
-  <section id="menuScreen" class="screen menu-screen">
-
-    <div class="top-social">
-      <div class="social apple"></div>
-      <div class="social facebook">f</div>
-      <div class="social like">♥</div>
+      <button id="computerBtn" class="menu-btn">PLAY WITH COMPUTER</button>
+      <button id="multiplayerBtn" class="menu-btn">MULTIPLAYER</button>
+      <button id="settingsBtn" class="menu-btn secondary">SETTINGS</button>
     </div>
-
-    <div class="logo">
-      <div>Naija</div>
-      <span>Ludo</span>
-    </div>
-
-    <div class="floating-dice">
-      <div class="small-die">⚄</div>
-      <div class="small-die">⚂</div>
-      <div class="small-die">⚅</div>
-    </div>
-
-    <div class="menu-buttons">
-
-      <button class="menu-circle" id="settingsBtn">
-        ⚙
-      </button>
-
-      <button class="menu-circle big-play" id="computerModeBtn">
-        🎮
-      </button>
-
-      <button class="menu-circle" id="multiplayerModeBtn">
-        ➜
-      </button>
-
-    </div>
-
-    <div class="menu-labels">
-      <span>Settings</span>
-      <span>Play</span>
-      <span>Multiplayer</span>
-    </div>
-
-    <div class="menu-ground">
-      <div class="road"></div>
-      <div class="grass-text">Naija</div>
-      <div class="grass-text right">Ludo</div>
-    </div>
-
   </section>
 
 
-  <!-- =========================
-       GAME SCREEN
-  ========================== -->
+  <!-- GAME -->
+  <section id="gameScreen" class="screen">
 
-  <section id="gameScreen" class="screen game-screen hidden">
+    <header class="topbar">
+      <button id="backBtn" class="icon-btn">←</button>
 
-    <div class="game-top">
-
-      <button class="round-control" id="menuBtn">
-        ☰
-      </button>
-
-      <div class="score-box">
-        <div id="myScore">Me: 0</div>
-        <div id="opponentScore">Opponent: 0</div>
+      <div class="turn-info">
+        <strong id="turnText">YOUR TURN</strong>
+        <span id="modeText">You: Red + Yellow</span>
       </div>
 
-      <button class="round-control sound-button" id="soundBtn">
-        🔊
-      </button>
-
-    </div>
+      <button id="restartBtn" class="icon-btn">↻</button>
+    </header>
 
 
-    <!-- HAND INDICATOR -->
+    <div class="game-wrapper">
 
-    <div class="hand-area">
-      <div class="hand">
-        <span>☝</span>
-        <strong id="handText">Your Turn</strong>
+      <!-- PLAYER HAND -->
+      <div class="player-hand">
+
+        <div class="player-card you-card">
+          <div class="player-avatar">👤</div>
+
+          <div>
+            <strong>YOU</strong>
+            <small>RED + YELLOW</small>
+          </div>
+
+          <div class="team-pieces">
+            <span class="mini red"></span>
+            <span class="mini yellow"></span>
+          </div>
+        </div>
+
+        <div class="player-card computer-card">
+          <div class="player-avatar">🤖</div>
+
+          <div>
+            <strong>COMPUTER</strong>
+            <small>GREEN + BLUE</small>
+          </div>
+
+          <div class="team-pieces">
+            <span class="mini green"></span>
+            <span class="mini blue"></span>
+          </div>
+        </div>
+
       </div>
-    </div>
 
 
-    <!-- BOARD -->
+      <!-- BOARD -->
+      <div class="board-area">
 
-    <div class="board-wrapper">
+        <div id="board" class="board">
 
-      <div class="board" id="board">
+          <!-- RED HOME -->
+          <div class="home red-home">
+            <div class="home-title">RED</div>
 
-        <!-- TOP LEFT -->
-        <div class="home-area green-home">
-          <div class="player-title">Opponent</div>
+            <div class="home-yard">
+              <button class="home-piece red-piece" data-color="red" data-piece="0"></button>
+              <button class="home-piece red-piece" data-color="red" data-piece="1"></button>
+              <button class="home-piece red-piece" data-color="red" data-piece="2"></button>
+              <button class="home-piece red-piece" data-color="red" data-piece="3"></button>
+            </div>
+          </div>
 
-          <div class="avatar green-avatar">👩🏽</div>
 
-          <div class="home-piece green-piece p1"
-               data-color="green"
-               data-piece="0"></div>
+          <!-- GREEN HOME -->
+          <div class="home green-home">
+            <div class="home-title">GREEN</div>
 
-          <div class="home-piece green-piece p2"
-               data-color="green"
-               data-piece="1"></div>
+            <div class="home-yard">
+              <button class="home-piece green-piece" data-color="green" data-piece="0"></button>
+              <button class="home-piece green-piece" data-color="green" data-piece="1"></button>
+              <button class="home-piece green-piece" data-color="green" data-piece="2"></button>
+              <button class="home-piece green-piece" data-color="green" data-piece="3"></button>
+            </div>
+          </div>
 
-          <div class="home-piece green-piece p3"
-               data-color="green"
-               data-piece="2"></div>
 
-          <div class="home-piece green-piece p4"
-               data-color="green"
-               data-piece="3"></div>
+          <!-- BLUE HOME -->
+          <div class="home blue-home">
+            <div class="home-title">BLUE</div>
+
+            <div class="home-yard">
+              <button class="home-piece blue-piece" data-color="blue" data-piece="0"></button>
+              <button class="home-piece blue-piece" data-color="blue" data-piece="1"></button>
+              <button class="home-piece blue-piece" data-color="blue" data-piece="2"></button>
+              <button class="home-piece blue-piece" data-color="blue" data-piece="3"></button>
+            </div>
+          </div>
+
+
+          <!-- YELLOW HOME -->
+          <div class="home yellow-home">
+            <div class="home-title">YELLOW</div>
+
+            <div class="home-yard">
+              <button class="home-piece yellow-piece" data-color="yellow" data-piece="0"></button>
+              <button class="home-piece yellow-piece" data-color="yellow" data-piece="1"></button>
+              <button class="home-piece yellow-piece" data-color="yellow" data-piece="2"></button>
+              <button class="home-piece yellow-piece" data-color="yellow" data-piece="3"></button>
+            </div>
+          </div>
+
+
+          <!-- PATH CELLS -->
+          <div id="pathLayer"></div>
+
+
+          <!-- CENTER DICE -->
+          <button id="dice" class="center-dice" aria-label="Roll dice">
+            <span id="diceNumber">1</span>
+          </button>
+
         </div>
 
+      </div>
 
-        <!-- TOP RIGHT -->
-        <div class="home-area yellow-home">
-          <div class="player-title">Player 2</div>
 
-          <div class="avatar yellow-avatar">👨🏽</div>
+      <!-- GAME INFO -->
+      <div class="game-info">
 
-          <div class="home-piece yellow-piece p1"
-               data-color="yellow"
-               data-piece="0"></div>
-
-          <div class="home-piece yellow-piece p2"
-               data-color="yellow"
-               data-piece="1"></div>
-
-          <div class="home-piece yellow-piece p3"
-               data-color="yellow"
-               data-piece="2"></div>
-
-          <div class="home-piece yellow-piece p4"
-               data-color="yellow"
-               data-piece="3"></div>
+        <div class="dice-message">
+          <span id="diceMessage">Tap the dice to roll</span>
         </div>
 
+        <div class="stats">
 
-        <!-- BOTTOM LEFT -->
-        <div class="home-area red-home">
-          <div class="player-title">Me</div>
+          <div class="stat">
+            <span class="stat-label">ROLL</span>
+            <strong id="rollValue">-</strong>
+          </div>
 
-          <div class="avatar red-avatar">👨🏽</div>
+          <div class="stat">
+            <span class="stat-label">RED</span>
+            <strong id="redFinished">0/4</strong>
+          </div>
 
-          <div class="home-piece red-piece p1"
-               data-color="red"
-               data-piece="0"></div>
+          <div class="stat">
+            <span class="stat-label">YELLOW</span>
+            <strong id="yellowFinished">0/4</strong>
+          </div>
 
-          <div class="home-piece red-piece p2"
-               data-color="red"
-               data-piece="1"></div>
-
-          <div class="home-piece red-piece p3"
-               data-color="red"
-               data-piece="2"></div>
-
-          <div class="home-piece red-piece p4"
-               data-color="red"
-               data-piece="3"></div>
-        </div>
-
-
-        <!-- BOTTOM RIGHT -->
-        <div class="home-area blue-home">
-          <div class="player-title">Player 3</div>
-
-          <div class="avatar blue-avatar">👩🏽</div>
-
-          <div class="home-piece blue-piece p1"
-               data-color="blue"
-               data-piece="0"></div>
-
-          <div class="home-piece blue-piece p2"
-               data-color="blue"
-               data-piece="1"></div>
-
-          <div class="home-piece blue-piece p3"
-               data-color="blue"
-               data-piece="2"></div>
-
-          <div class="home-piece blue-piece p4"
-               data-color="blue"
-               data-piece="3"></div>
-        </div>
-
-
-        <!-- CENTER BOARD -->
-        <div class="center-area">
-
-          <div class="center-decoration"></div>
-
-          <div class="dice-container">
-
-            <button class="dice red-dice" id="dice1">
-              <span>●</span>
-            </button>
-
-            <button class="dice red-dice" id="dice2">
-              <span>●</span>
-            </button>
-
+          <div class="stat">
+            <span class="stat-label">COMPUTER</span>
+            <strong id="computerFinished">0/8</strong>
           </div>
 
         </div>
 
-
-        <!-- PATH CELLS -->
-
-        <div class="path-cell green-path c1"></div>
-        <div class="path-cell green-path c2"></div>
-        <div class="path-cell green-path c3"></div>
-        <div class="path-cell green-path c4"></div>
-        <div class="path-cell green-path c5"></div>
-
-        <div class="path-cell yellow-path c6"></div>
-        <div class="path-cell yellow-path c7"></div>
-        <div class="path-cell yellow-path c8"></div>
-        <div class="path-cell yellow-path c9"></div>
-        <div class="path-cell yellow-path c10"></div>
-
-        <div class="path-cell blue-path c11"></div>
-        <div class="path-cell blue-path c12"></div>
-        <div class="path-cell blue-path c13"></div>
-        <div class="path-cell blue-path c14"></div>
-        <div class="path-cell blue-path c15"></div>
-
-        <div class="path-cell red-path c16"></div>
-        <div class="path-cell red-path c17"></div>
-        <div class="path-cell red-path c18"></div>
-        <div class="path-cell red-path c19"></div>
-        <div class="path-cell red-path c20"></div>
-
-        <div class="path-cell white-path c21"></div>
-        <div class="path-cell white-path c22"></div>
-        <div class="path-cell white-path c23"></div>
-        <div class="path-cell white-path c24"></div>
-        <div class="path-cell white-path c25"></div>
-
-        <div class="path-cell white-path c26"></div>
-        <div class="path-cell white-path c27"></div>
-        <div class="path-cell white-path c28"></div>
-        <div class="path-cell white-path c29"></div>
-        <div class="path-cell white-path c30"></div>
-
       </div>
 
     </div>
-
-
-    <!-- BOTTOM DICE COUNTERS -->
-
-    <div class="dice-counters">
-
-      <div class="counter blue-counter">
-        <span id="blueCount">0</span>
-      </div>
-
-      <div class="counter red-counter">
-        <span id="redCount">0</span>
-      </div>
-
-      <div class="counter green-counter">
-        <span id="greenCount">0</span>
-      </div>
-
-    </div>
-
-
-    <!-- PLAYER STATS -->
-
-    <div class="stats">
-
-      <div>
-        <strong>Rank:</strong>
-        <span id="rank">0</span>
-      </div>
-
-      <div>
-        <strong>Wins:</strong>
-        <span id="wins">0</span>
-      </div>
-
-    </div>
-
-
-    <!-- ROLL BUTTON -->
-
-    <button id="rollBtn" class="roll-button">
-      ROLL DICE
-    </button>
-
-
-    <!-- MODE LABEL -->
-
-    <div class="mode-label" id="modeLabel">
-      You vs Computer
-    </div>
-
   </section>
 
 
-  <!-- =========================
-       WIN MODAL
-  ========================== -->
+  <!-- WIN MODAL -->
+  <div id="winModal" class="modal">
+    <div class="modal-box">
 
-  <div class="modal hidden" id="winnerModal">
+      <div id="winnerIcon" class="winner-icon">🏆</div>
 
-    <div class="modal-card">
+      <h2 id="winnerTitle">YOU WIN!</h2>
 
-      <div class="winner-icon">🏆</div>
-
-      <h2 id="winnerText">
-        You Win!
-      </h2>
-
-      <p>
+      <p id="winnerMessage">
         Congratulations!
       </p>
 
-      <button id="playAgainBtn">
-        Play Again
+      <button id="playAgainBtn" class="modal-btn">
+        PLAY AGAIN
       </button>
 
-      <button id="backMenuBtn">
-        Main Menu
+      <button id="menuBtn" class="modal-btn secondary">
+        MAIN MENU
       </button>
 
     </div>
-
   </div>
 
 
-  <!-- =========================
-       SETTINGS MODAL
-  ========================== -->
+  <!-- SETTINGS -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-box">
 
-  <div class="modal hidden" id="settingsModal">
-
-    <div class="modal-card">
-
-      <h2>Settings</h2>
+      <h2>SETTINGS</h2>
 
       <label class="setting-row">
         <span>Sound</span>
-        <input type="checkbox" id="soundToggle" checked>
+        <input id="soundToggle" type="checkbox" checked>
       </label>
 
-      <button id="closeSettings">
-        Close
+      <button id="closeSettings" class="modal-btn">
+        DONE
       </button>
 
     </div>
-
   </div>
 
 
   <script src="script.js"></script>
-
 </body>
 </html>
