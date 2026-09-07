@@ -3,66 +3,211 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ludo Game</title>
+  <meta name="theme-color" content="#111827">
+  <title>Ludo Royale</title>
+
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <div class="game">
-    <h1>🎲 LUDO</h1>
+  <main class="game-container">
 
-    <div class="board">
-
-      <!-- Red Home -->
-      <div class="home red-home">
-        <div class="piece red"></div>
-        <div class="piece red"></div>
-        <div class="piece red"></div>
-        <div class="piece red"></div>
+    <header class="game-header">
+      <div>
+        <h1>🎲 LUDO ROYALE</h1>
+        <p>Roll the dice. Move your pieces. Be the first home!</p>
       </div>
 
-      <!-- Blue Home -->
-      <div class="home blue-home">
-        <div class="piece blue"></div>
-        <div class="piece blue"></div>
-        <div class="piece blue"></div>
-        <div class="piece blue"></div>
-      </div>
-
-      <!-- Yellow Home -->
-      <div class="home yellow-home">
-        <div class="piece yellow"></div>
-        <div class="piece yellow"></div>
-        <div class="piece yellow"></div>
-        <div class="piece yellow"></div>
-      </div>
-
-      <!-- Green Home -->
-      <div class="home green-home">
-        <div class="piece green"></div>
-        <div class="piece green"></div>
-        <div class="piece green"></div>
-        <div class="piece green"></div>
-      </div>
-
-      <!-- Center -->
-      <div class="center">
-        <span>🏆</span>
-      </div>
-
-    </div>
-
-    <div class="controls">
-      <div id="dice">🎲</div>
-
-      <button onclick="rollDice()">
-        ROLL DICE
+      <button id="soundToggle" class="sound-button">
+        🔊 Sound ON
       </button>
+    </header>
 
-      <p id="message">Player 1's turn</p>
+    <section class="game-layout">
+
+      <!-- GAME BOARD -->
+      <div class="board-wrapper">
+
+        <div class="board">
+
+          <!-- RED HOME -->
+          <div class="home red-home">
+            <div class="home-title">RED</div>
+
+            <div class="home-yard">
+              <div class="piece red-piece" data-player="red" data-piece="0"></div>
+              <div class="piece red-piece" data-player="red" data-piece="1"></div>
+              <div class="piece red-piece" data-player="red" data-piece="2"></div>
+              <div class="piece red-piece" data-player="red" data-piece="3"></div>
+            </div>
+          </div>
+
+          <!-- BLUE HOME -->
+          <div class="home blue-home">
+            <div class="home-title">BLUE</div>
+
+            <div class="home-yard">
+              <div class="piece blue-piece" data-player="blue" data-piece="0"></div>
+              <div class="piece blue-piece" data-player="blue" data-piece="1"></div>
+              <div class="piece blue-piece" data-player="blue" data-piece="2"></div>
+              <div class="piece blue-piece" data-player="blue" data-piece="3"></div>
+            </div>
+          </div>
+
+          <!-- GREEN HOME -->
+          <div class="home green-home">
+            <div class="home-title">GREEN</div>
+
+            <div class="home-yard">
+              <div class="piece green-piece" data-player="green" data-piece="0"></div>
+              <div class="piece green-piece" data-player="green" data-piece="1"></div>
+              <div class="piece green-piece" data-player="green" data-piece="2"></div>
+              <div class="piece green-piece" data-player="green" data-piece="3"></div>
+            </div>
+          </div>
+
+          <!-- YELLOW HOME -->
+          <div class="home yellow-home">
+            <div class="home-title">YELLOW</div>
+
+            <div class="home-yard">
+              <div class="piece yellow-piece" data-player="yellow" data-piece="0"></div>
+              <div class="piece yellow-piece" data-player="yellow" data-piece="1"></div>
+              <div class="piece yellow-piece" data-player="yellow" data-piece="2"></div>
+              <div class="piece yellow-piece" data-player="yellow" data-piece="3"></div>
+            </div>
+          </div>
+
+          <!-- CENTER -->
+          <div class="center-area">
+            <div class="center-triangle red-triangle"></div>
+            <div class="center-triangle blue-triangle"></div>
+            <div class="center-triangle green-triangle"></div>
+            <div class="center-triangle yellow-triangle"></div>
+
+            <div class="trophy">🏆</div>
+          </div>
+
+          <!-- TRACK -->
+          <div class="track">
+            <div class="track-cell" data-position="0"></div>
+            <div class="track-cell" data-position="1"></div>
+            <div class="track-cell" data-position="2"></div>
+            <div class="track-cell" data-position="3"></div>
+            <div class="track-cell" data-position="4"></div>
+            <div class="track-cell" data-position="5"></div>
+            <div class="track-cell" data-position="6"></div>
+            <div class="track-cell" data-position="7"></div>
+            <div class="track-cell" data-position="8"></div>
+            <div class="track-cell" data-position="9"></div>
+            <div class="track-cell" data-position="10"></div>
+            <div class="track-cell" data-position="11"></div>
+            <div class="track-cell" data-position="12"></div>
+            <div class="track-cell" data-position="13"></div>
+            <div class="track-cell" data-position="14"></div>
+            <div class="track-cell" data-position="15"></div>
+            <div class="track-cell" data-position="16"></div>
+            <div class="track-cell" data-position="17"></div>
+            <div class="track-cell" data-position="18"></div>
+            <div class="track-cell" data-position="19"></div>
+            <div class="track-cell" data-position="20"></div>
+            <div class="track-cell" data-position="21"></div>
+            <div class="track-cell" data-position="22"></div>
+            <div class="track-cell" data-position="23"></div>
+            <div class="track-cell" data-position="24"></div>
+            <div class="track-cell" data-position="25"></div>
+            <div class="track-cell" data-position="26"></div>
+            <div class="track-cell" data-position="27"></div>
+            <div class="track-cell" data-position="28"></div>
+            <div class="track-cell" data-position="29"></div>
+            <div class="track-cell" data-position="30"></div>
+            <div class="track-cell" data-position="31"></div>
+            <div class="track-cell" data-position="32"></div>
+            <div class="track-cell" data-position="33"></div>
+            <div class="track-cell" data-position="34"></div>
+            <div class="track-cell" data-position="35"></div>
+            <div class="track-cell" data-position="36"></div>
+            <div class="track-cell" data-position="37"></div>
+            <div class="track-cell" data-position="38"></div>
+            <div class="track-cell" data-position="39"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- CONTROLS -->
+      <aside class="controls">
+
+        <div class="turn-card">
+          <span class="turn-label">CURRENT TURN</span>
+          <h2 id="playerName">RED PLAYER</h2>
+          <div id="turnDot" class="turn-dot red"></div>
+        </div>
+
+        <div class="dice-box">
+
+          <div id="dice" class="dice">⚀</div>
+
+          <button id="rollButton" class="roll-button">
+            🎲 ROLL DICE
+          </button>
+
+          <p id="message">
+            Roll the dice to begin!
+          </p>
+
+        </div>
+
+        <button id="newGameButton" class="new-game-button">
+          🔄 NEW GAME
+        </button>
+
+        <div class="rules">
+          <h3>How to Play</h3>
+
+          <ul>
+            <li>Roll a <strong>6</strong> to bring a piece out.</li>
+            <li>Click a highlighted piece to move it.</li>
+            <li>Capture opponents by landing on them.</li>
+            <li>Get all 4 pieces home to win.</li>
+            <li>Rolling a 6 gives you another turn.</li>
+          </ul>
+        </div>
+
+      </aside>
+
+    </section>
+
+    <!-- WINNER MODAL -->
+    <div id="winnerModal" class="winner-modal hidden">
+
+      <div class="winner-card">
+
+        <div class="confetti">🎉</div>
+
+        <h2 id="winnerTitle">RED WINS!</h2>
+
+        <p>
+          Congratulations! You got all your pieces home.
+        </p>
+
+        <div class="clap-text">
+          👏 👏 👏 👏 👏
+        </div>
+
+        <button id="playAgainButton">
+          PLAY AGAIN
+        </button>
+
+      </div>
+
     </div>
 
-  </div>
+  </main>
+
+  <script src="script.js"></script>
 
 </body>
 </html>
