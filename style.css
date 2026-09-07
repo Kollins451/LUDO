@@ -1,0 +1,139 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: #151515;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.game {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 32px;
+}
+
+.board {
+  width: min(90vw, 500px);
+  height: min(90vw, 500px);
+  margin: auto;
+  background: white;
+  border: 8px solid #222;
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.home {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px;
+  padding: 30px;
+  border: 2px solid #222;
+}
+
+.red-home {
+  background: #e53935;
+}
+
+.blue-home {
+  background: #1e88e5;
+}
+
+.yellow-home {
+  background: #fdd835;
+}
+
+.green-home {
+  background: #43a047;
+}
+
+.piece {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 4px solid white;
+  margin: auto;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.red {
+  background: #b71c1c;
+}
+
+.blue {
+  background: #0d47a1;
+}
+
+.yellow {
+  background: #f57f17;
+}
+
+.green {
+  background: #1b5e20;
+}
+
+.center {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  background: white;
+  border: 6px solid #222;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 40px;
+}
+
+.controls {
+  margin-top: 25px;
+}
+
+#dice {
+  font-size: 60px;
+  margin-bottom: 15px;
+}
+
+button {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+#message {
+  margin-top: 15px;
+  font-size: 16px;
+}
