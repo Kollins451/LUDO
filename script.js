@@ -1,882 +1,2931 @@
-/* =========================================
-   LUDO ROYALE
-   GAME JAVASCRIPT
-========================================= */
+/* =====================================================
+   CLASSIC LUDO GAME
+   JAVASCRIPT
+===================================================== */
 
-const players = [
-  {
-    name: "RED PLAYER",
-    color: "red",
-    pieces: [0, 0, 0, 0],
-    finished: 0
-  },
-  {
-    name: "BLUE PLAYER",
-    color: "blue",
-    pieces: [0, 0, 0, 0],
-    finished: 0
-  },
-  {
-    name: "GREEN PLAYER",
-    color: "green",
-    pieces: [0, 0, 0, 0],
-    finished: 0
-  },
-  {
-    name: "YELLOW PLAYER",
-    color: "yellow",
-    pieces: [0, 0, 0, 0],
-    finished: 0
-  }
+
+/* =====================================================
+   CONFIGURATION
+===================================================== */
+
+const COLORS = ["red", "green", "yellow", "blue"];
+
+const PLAYER_NAMES = {
+  red: "You",
+  green: "Computer",
+  yellow: "Yellow",
+  blue: "Blue"
+};
+
+
+/*
+   Standard 52-square outer Ludo path.
+
+   Coordinates are based on a 15 x 15 board.
+*/
+
+const PATH = [
+
+  [6,14],
+  [7,14],
+  [8,14],
+  [9,14],
+  [10,14],
+  [11,14],
+
+  [12,13],
+  [12,12],
+  [12,11],
+  [12,10],
+  [12,9],
+
+  [13,8],
+  [14,8],
+  [13,7],
+  [12,7],
+  [11,7],
+  [10,7],
+  [9,7],
+
+  [8,6],
+  [8,5],
+  [8,4],
+  [8,3],
+  [8,2],
+  [8,1],
+  [8,0],
+
+  [7,0],
+  [6,0],
+  [6,1],
+  [6,2],
+  [6,3],
+  [6,4],
+  [6,5],
+
+  [5,6],
+  [4,6],
+  [3,6],
+  [2,6],
+  [1,6],
+  [0,6],
+
+  [0,7],
+  [1,7],
+  [2,7],
+  [3,7],
+  [4,7],
+  [5,7],
+
+  [6,8],
+  [6,9],
+  [6,10],
+  [6,11],
+  [6,12],
+  [6,13]
+
 ];
 
-let currentPlayer = 0;
-let diceValue = 1;
-let waitingForPiece = false;
-let gameOver = false;
+
+/*
+   Each player starts at a different point.
+*/
+
+const START_INDEX = {
+  red: 0,
+  green: 13,
+  yellow: 26,
+  blue: 39
+};
+
+
+/*
+   Safe/star squares.
+*/
+
+const SAFE_SQUARES = [
+  0,
+  8,
+  13,
+  21,
+  26,
+  34,
+  39,
+  47
+];
+
+
+/*
+   Home lane coordinates.
+
+   Six positions:
+   1-6
+*/
+
+const HOME_LANES = {
+
+  red: [
+    [7,13],
+    [7,12],
+    [7,11],
+    [7,10],
+    [7,9],
+    [7,8]
+  ],
+
+  green: [
+    [8,7],
+    [9,7],
+    [10,7],
+    [11,7],
+    [12,7],
+    [13,7]
+  ],
+
+  yellow: [
+    [7,1],
+    [7,2],
+    [7,3],
+    [7,4],
+    [7,5],
+    [7,6]
+  ],
+
+  blue: [
+    [1,7],
+    [2,7],
+    [3,7],
+    [4,7],
+    [5,7],
+    [6,7]
+  ]
+
+};
+
+
+/*
+   Four home-piece positions.
+*/
+
+const HOME_POSITIONS = {
+
+  red: [
+    [2.3,2.3],
+    [3.7,2.3],
+    [2.3,3.7],
+    [3.7,3.7]
+  ],
+
+  green: [
+    [11.3,2.3],
+    [12.7,2.3],
+    [11.3,3.7],
+    [12.7,3.7]
+  ],
+
+  yellow: [
+    [2.3,11.3],
+    [3.7,11.3],
+    [2.3,12.7],
+    [3.7,12.7]
+  ],
+
+  blue: [
+    [11.3,11.3],
+    [12.7,11.3],
+    [11.3,12.7],
+    [12.7,12.7]
+  ]
+
+};
+
+
+/* =====================================================
+   GAME STATE
+===================================================== */
+
+let mode = "computer";
+
+let currentPlayer = "red";
+
+let diceValue = 0;
+
+let hasRolled = false;
+
+let gameFinished = false;
+
 let soundEnabled = true;
 
-/* =========================================
-   DOM ELEMENTS
-========================================= */
+let computerTimeout = null;
 
-const dice = document.getElementById("dice");
-const rollButton = document.getElementById("rollButton");
-const message = document.getElementById("message");
-const playerName = document.getElementById("playerName");
-const turnDot = document.getElementById("turnDot");
-const soundToggle = document.getElementById("soundToggle");
-const newGameButton = document.getElementById("newGameButton");
-const winnerModal = document.getElementById("winnerModal");
-const winnerTitle = document.getElementById("winnerTitle");
-const playAgainButton = document.getElementById("playAgainButton");
 
-const diceFaces = [
-  "⚀",
-  "⚁",
-  "⚂",
-  "⚃",
-  "⚄",
-  "⚅"
-];
+/*
+   Piece position:
 
-/* =========================================
-   AUDIO SYSTEM
-   Browser-generated sounds
-========================================= */
+   -1 = inside home
+    0 = start
+    1...51 = outer track
+   52...57 = home lane
+   57 = finished
+*/
 
-let audioContext = null;
-let musicTimer = null;
-let musicPlaying = false;
+const players = {};
 
-function createAudioContext() {
 
-  if (!audioContext) {
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
+/* =====================================================
+   CREATE PLAYERS
+===================================================== */
 
-    if (AudioContext) {
-      audioContext = new AudioContext();
-    }
-  }
+function createPlayers() {
 
-  if (
-    audioContext &&
-    audioContext.state === "suspended"
-  ) {
-    audioContext.resume();
-  }
+  players.red = {
+    color: "red",
+    name: "You",
+    human: true,
+    pieces: createPieces()
+  };
 
-  return audioContext;
+  players.green = {
+    color: "green",
+    name: "Computer",
+    human: false,
+    pieces: createPieces()
+  };
+
+  players.yellow = {
+    color: "yellow",
+    name: "Yellow",
+    human: false,
+    pieces: createPieces()
+  };
+
+  players.blue = {
+    color: "blue",
+    name: "Blue",
+    human: false,
+    pieces: createPieces()
+  };
+
 }
 
 
-/* Basic sound */
+function createPieces() {
 
-function playTone(
-  frequency,
-  duration = 0.15,
-  type = "sine",
-  volume = 0.08
+  return [
+    {
+      position: -1,
+      finished: false
+    },
+    {
+      position: -1,
+      finished: false
+    },
+    {
+      position: -1,
+      finished: false
+    },
+    {
+      position: -1,
+      finished: false
+    }
+  ];
+
+}
+
+
+/* =====================================================
+   DOM
+===================================================== */
+
+const menuScreen =
+  document.getElementById("menuScreen");
+
+const gameScreen =
+  document.getElementById("gameScreen");
+
+const board =
+  document.getElementById("board");
+
+const computerBtn =
+  document.getElementById("computerBtn");
+
+const multiplayerBtn =
+  document.getElementById("multiplayerBtn");
+
+const backBtn =
+  document.getElementById("backBtn");
+
+const soundBtn =
+  document.getElementById("soundBtn");
+
+const rollButton =
+  document.getElementById("rollButton");
+
+const diceButton =
+  document.getElementById("diceButton");
+
+const diceNumber =
+  document.getElementById("diceNumber");
+
+const diceValueTop =
+  document.getElementById("diceValueTop");
+
+const turnName =
+  document.getElementById("turnName");
+
+const turnStatus =
+  document.getElementById("turnStatus");
+
+const turnDot =
+  document.getElementById("turnDot");
+
+const modeLabel =
+  document.getElementById("modeLabel");
+
+const handPieces =
+  document.querySelectorAll(".hand-piece");
+
+const homeCount =
+  document.getElementById("homeCount");
+
+const winModal =
+  document.getElementById("winModal");
+
+const winnerTitle =
+  document.getElementById("winnerTitle");
+
+const winnerText =
+  document.getElementById("winnerText");
+
+const rulesModal =
+  document.getElementById("rulesModal");
+
+
+/* =====================================================
+   BOARD CREATION
+===================================================== */
+
+function buildBoard() {
+
+  /*
+     Remove existing cells.
+  */
+
+  board
+    .querySelectorAll(".cell")
+    .forEach(cell => cell.remove());
+
+
+  /*
+     Create 225 cells.
+  */
+
+  for (let row = 0; row < 15; row++) {
+
+    for (let col = 0; col < 15; col++) {
+
+      const cell =
+        document.createElement("div");
+
+      cell.className = "cell";
+
+      cell.dataset.row = row;
+      cell.dataset.col = col;
+
+      applyCellDesign(
+        cell,
+        row,
+        col
+      );
+
+      board.insertBefore(
+        cell,
+        board.querySelector(".center-dice-area")
+      );
+
+    }
+
+  }
+
+}
+
+
+/* =====================================================
+   CELL DESIGN
+===================================================== */
+
+function applyCellDesign(
+  cell,
+  row,
+  col
 ) {
 
-  if (!soundEnabled) return;
+  /*
+     Four 6x6 home areas.
+  */
 
-  const ctx = createAudioContext();
+  if (
+    row < 6 &&
+    col < 6
+  ) {
 
-  if (!ctx) return;
-
-  const oscillator = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  oscillator.type = type;
-  oscillator.frequency.value = frequency;
-
-  gain.gain.setValueAtTime(
-    volume,
-    ctx.currentTime
-  );
-
-  gain.gain.exponentialRampToValueAtTime(
-    0.001,
-    ctx.currentTime + duration
-  );
-
-  oscillator.connect(gain);
-  gain.connect(ctx.destination);
-
-  oscillator.start();
-
-  oscillator.stop(
-    ctx.currentTime + duration
-  );
-}
-
-
-/* Dice sound */
-
-function diceSound() {
-
-  playTone(220, 0.08, "square", 0.05);
-
-  setTimeout(() => {
-    playTone(330, 0.08, "square", 0.05);
-  }, 80);
-
-  setTimeout(() => {
-    playTone(440, 0.12, "square", 0.05);
-  }, 160);
-}
-
-
-/* Piece movement */
-
-function moveSound() {
-
-  playTone(
-    500,
-    0.08,
-    "triangle",
-    0.06
-  );
-}
-
-
-/* Capture sound */
-
-function captureSound() {
-
-  playTone(
-    120,
-    0.15,
-    "sawtooth",
-    0.08
-  );
-
-  setTimeout(() => {
-    playTone(
-      70,
-      0.2,
-      "sawtooth",
-      0.05
-    );
-  }, 100);
-}
-
-
-/* Winner celebration */
-
-function winnerSound() {
-
-  if (!soundEnabled) return;
-
-  const notes = [
-    523,
-    659,
-    784,
-    1047,
-    1319
-  ];
-
-  notes.forEach((note, index) => {
-
-    setTimeout(() => {
-
-      playTone(
-        note,
-        0.25,
-        "triangle",
-        0.12
-      );
-
-    }, index * 180);
-
-  });
-
-  /* Clap-like sounds */
-
-  for (let i = 0; i < 8; i++) {
-
-    setTimeout(() => {
-
-      playTone(
-        90 + Math.random() * 40,
-        0.06,
-        "square",
-        0.12
-      );
-
-    }, 1000 + i * 140);
-  }
-}
-
-
-/* =========================================
-   BACKGROUND BEAT
-========================================= */
-
-function startMusic() {
-
-  if (!soundEnabled || musicPlaying) return;
-
-  createAudioContext();
-
-  musicPlaying = true;
-
-  const beat = [
-    261.63,
-    329.63,
-    392.00,
-    329.63
-  ];
-
-  let index = 0;
-
-  musicTimer = setInterval(() => {
-
-    if (!soundEnabled) return;
-
-    playTone(
-      beat[index],
-      0.18,
-      "sine",
-      0.025
+    cell.classList.add(
+      "red-home"
     );
 
-    index++;
-
-    if (index >= beat.length) {
-      index = 0;
-    }
-
-  }, 450);
-}
-
-
-function stopMusic() {
-
-  if (musicTimer) {
-    clearInterval(musicTimer);
-    musicTimer = null;
-  }
-
-  musicPlaying = false;
-}
-
-
-/* =========================================
-   SOUND BUTTON
-========================================= */
-
-soundToggle.addEventListener(
-  "click",
-  () => {
-
-    soundEnabled = !soundEnabled;
-
-    if (soundEnabled) {
-
-      soundToggle.textContent =
-        "🔊 Sound ON";
-
-      createAudioContext();
-
-      startMusic();
-
-      playTone(
-        600,
-        0.1,
-        "triangle",
-        0.07
-      );
-
-    } else {
-
-      soundToggle.textContent =
-        "🔇 Sound OFF";
-
-      stopMusic();
-    }
-
-  }
-);
-
-
-/* =========================================
-   UPDATE TURN
-========================================= */
-
-function updateTurn() {
-
-  const player =
-    players[currentPlayer];
-
-  playerName.textContent =
-    player.name;
-
-  turnDot.className =
-    `turn-dot ${player.color}`;
-
-}
-
-
-/* =========================================
-   ROLL DICE
-========================================= */
-
-rollButton.addEventListener(
-  "click",
-  rollDice
-);
-
-function rollDice() {
-
-  if (gameOver || waitingForPiece) {
-    return;
-  }
-
-  createAudioContext();
-
-  startMusic();
-
-  rollButton.disabled = true;
-
-  dice.classList.add("rolling");
-
-  diceSound();
-
-  let animationCount = 0;
-
-  const animation = setInterval(() => {
-
-    const temporary =
-      Math.floor(Math.random() * 6);
-
-    dice.textContent =
-      diceFaces[temporary];
-
-    animationCount++;
-
-    if (animationCount >= 8) {
-
-      clearInterval(animation);
-
-      diceValue =
-        Math.floor(Math.random() * 6) + 1;
-
-      dice.textContent =
-        diceFaces[diceValue - 1];
-
-      dice.classList.remove(
-        "rolling"
-      );
-
-      handleDiceResult();
-
-    }
-
-  }, 80);
-
-}
-
-
-/* =========================================
-   HANDLE DICE
-========================================= */
-
-function handleDiceResult() {
-
-  const player =
-    players[currentPlayer];
-
-  message.textContent =
-    `${player.name} rolled ${diceValue}.`;
-
-  if (diceValue === 6) {
-
-    message.textContent +=
-      " Choose a piece to move.";
-
-  } else {
-
-    message.textContent +=
-      " Choose a piece.";
-  }
-
-  highlightPieces();
-
-  waitingForPiece = true;
-
-}
-
-
-/* =========================================
-   HIGHLIGHT PIECES
-========================================= */
-
-function highlightPieces() {
-
-  clearHighlights();
-
-  const player =
-    players[currentPlayer];
-
-  const pieces =
-    document.querySelectorAll(
-      `.piece[data-player="${player.color}"]`
-    );
-
-  pieces.forEach((piece, index) => {
+    /*
+       Inner home.
+    */
 
     if (
-      player.pieces[index] < 57 &&
-      canMovePiece(index)
+      row >= 1 &&
+      row <= 4 &&
+      col >= 1 &&
+      col <= 4
     ) {
 
-      piece.classList.add(
-        "movable"
-      );
-
-      piece.addEventListener(
-        "click",
-        pieceClickHandler
+      cell.classList.add(
+        "home-inner-red"
       );
 
     }
+
+  }
+
+
+  if (
+    row < 6 &&
+    col >= 9
+  ) {
+
+    cell.classList.add(
+      "green-home"
+    );
+
+    if (
+      row >= 1 &&
+      row <= 4 &&
+      col >= 10 &&
+      col <= 13
+    ) {
+
+      cell.classList.add(
+        "home-inner-green"
+      );
+
+    }
+
+  }
+
+
+  if (
+    row >= 9 &&
+    col < 6
+  ) {
+
+    cell.classList.add(
+      "yellow-home"
+    );
+
+    if (
+      row >= 10 &&
+      row <= 13 &&
+      col >= 1 &&
+      col <= 4
+    ) {
+
+      cell.classList.add(
+        "home-inner-yellow"
+      );
+
+    }
+
+  }
+
+
+  if (
+    row >= 9 &&
+    col >= 9
+  ) {
+
+    cell.classList.add(
+      "blue-home"
+    );
+
+    if (
+      row >= 10 &&
+      row <= 13 &&
+      col >= 10 &&
+      col <= 13
+    ) {
+
+      cell.classList.add(
+        "home-inner-blue"
+      );
+
+    }
+
+  }
+
+
+  /*
+     Outer track.
+  */
+
+  const pathIndex =
+    PATH.findIndex(
+      position =>
+        position[0] === col &&
+        position[1] === row
+    );
+
+
+  if (pathIndex !== -1) {
+
+    cell.className =
+      "cell path";
+
+    cell.dataset.path =
+      pathIndex;
+
+
+    /*
+       Starting squares.
+    */
+
+    if (
+      pathIndex === START_INDEX.red
+    ) {
+
+      cell.classList.add(
+        "start-red"
+      );
+
+    }
+
+    if (
+      pathIndex === START_INDEX.green
+    ) {
+
+      cell.classList.add(
+        "start-green"
+      );
+
+    }
+
+    if (
+      pathIndex === START_INDEX.yellow
+    ) {
+
+      cell.classList.add(
+        "start-yellow"
+      );
+
+    }
+
+    if (
+      pathIndex === START_INDEX.blue
+    ) {
+
+      cell.classList.add(
+        "start-blue"
+      );
+
+    }
+
+
+    /*
+       Safe stars.
+    */
+
+    if (
+      SAFE_SQUARES.includes(
+        pathIndex
+      )
+    ) {
+
+      cell.classList.add(
+        "star"
+      );
+
+      cell.textContent = "★";
+
+    }
+
+  }
+
+
+  /*
+     Home lanes.
+  */
+
+  COLORS.forEach(color => {
+
+    HOME_LANES[color]
+      .forEach(position => {
+
+        if (
+          position[0] === col &&
+          position[1] === row
+        ) {
+
+          cell.className =
+            `cell lane-${color}`;
+
+        }
+
+      });
 
   });
 
-}
 
-
-/* =========================================
-   CAN MOVE
-========================================= */
-
-function canMovePiece(index) {
-
-  const position =
-    players[currentPlayer].pieces[index];
-
-  if (position === 57) {
-    return false;
-  }
-
-  if (position === 0) {
-    return diceValue === 6;
-  }
-
-  return position + diceValue <= 57;
-}
-
-
-/* =========================================
-   PIECE CLICK
-========================================= */
-
-function pieceClickHandler(event) {
-
-  const piece =
-    event.currentTarget;
-
-  const playerColor =
-    piece.dataset.player;
-
-  const pieceIndex =
-    Number(piece.dataset.piece);
-
-  const playerIndex =
-    players.findIndex(
-      player =>
-        player.color === playerColor
-    );
+  /*
+     Center 3x3.
+  */
 
   if (
-    playerIndex !== currentPlayer
-  ) {
-    return;
-  }
-
-  movePiece(pieceIndex);
-}
-
-
-/* =========================================
-   MOVE PIECE
-========================================= */
-
-function movePiece(index) {
-
-  const player =
-    players[currentPlayer];
-
-  const oldPosition =
-    player.pieces[index];
-
-  let newPosition;
-
-  if (oldPosition === 0) {
-
-    newPosition = 1;
-
-  } else {
-
-    newPosition =
-      oldPosition + diceValue;
-  }
-
-  player.pieces[index] =
-    newPosition;
-
-  moveSound();
-
-  clearHighlights();
-
-  waitingForPiece = false;
-
-  message.textContent =
-    `${player.name} moved piece ${index + 1}.`;
-
-  /* Check capture */
-
-  checkCapture(
-    currentPlayer,
-    index
-  );
-
-  /* Check finish */
-
-  if (newPosition >= 57) {
-
-    player.pieces[index] = 57;
-
-    player.finished++;
-
-    message.textContent =
-      `${player.name} got a piece home! 🏠`;
-
-    playTone(
-      700,
-      0.2,
-      "triangle",
-      0.08
-    );
-  }
-
-  /* Check winner */
-
-  if (player.finished >= 4) {
-
-    finishGame();
-
-    return;
-  }
-
-  updateBoard();
-
-  /* Six = another turn */
-
-  if (diceValue === 6) {
-
-    message.textContent =
-      `${player.name} rolled a 6! Roll again.`;
-
-    rollButton.disabled = false;
-
-  } else {
-
-    nextPlayer();
-
-  }
-
-}
-
-
-/* =========================================
-   CAPTURE
-========================================= */
-
-function checkCapture(
-  playerIndex,
-  pieceIndex
-) {
-
-  const player =
-    players[playerIndex];
-
-  const position =
-    player.pieces[pieceIndex];
-
-  if (
-    position <= 0 ||
-    position >= 57
-  ) {
-    return;
-  }
-
-  for (
-    let i = 0;
-    i < players.length;
-    i++
+    row >= 6 &&
+    row <= 8 &&
+    col >= 6 &&
+    col <= 8
   ) {
 
-    if (i === playerIndex) {
-      continue;
-    }
+    cell.className =
+      "cell";
 
-    const opponent =
-      players[i];
 
-    for (
-      let j = 0;
-      j < opponent.pieces.length;
-      j++
+    if (
+      row === 6 &&
+      col === 6
     ) {
 
-      const opponentPosition =
-        opponent.pieces[j];
+      cell.classList.add(
+        "center-red"
+      );
+
+    }
+
+    if (
+      row === 6 &&
+      col === 7
+    ) {
+
+      cell.classList.add(
+        "center-red"
+      );
+
+    }
+
+    if (
+      row === 7 &&
+      col === 6
+    ) {
+
+      cell.classList.add(
+        "center-blue"
+      );
+
+    }
+
+    if (
+      row === 8 &&
+      col === 6
+    ) {
+
+      cell.classList.add(
+        "center-blue"
+      );
+
+    }
+
+    if (
+      row === 8 &&
+      col === 7
+    ) {
+
+      cell.classList.add(
+        "center-yellow"
+      );
+
+    }
+
+    if (
+      row === 8 &&
+      col === 8
+    ) {
+
+      cell.classList.add(
+        "center-yellow"
+      );
+
+    }
+
+    if (
+      row === 7 &&
+      col === 8
+    ) {
+
+      cell.classList.add(
+        "center-green"
+      );
+
+    }
+
+    if (
+      row === 6 &&
+      col === 8
+    ) {
+
+      cell.classList.add(
+        "center-green"
+      );
+
+    }
+
+  }
+
+
+  /*
+     Add home circles.
+  */
+
+  addHomeCircle(
+    cell,
+    row,
+    col
+  );
+
+}
+
+
+/* =====================================================
+   HOME CIRCLES
+===================================================== */
+
+function addHomeCircle(
+  cell,
+  row,
+  col
+) {
+
+  const positions = [
+
+    [2,2,"red"],
+    [2,3,"red"],
+    [3,2,"red"],
+    [3,3,"red"],
+
+    [2,11,"green"],
+    [2,12,"green"],
+    [3,11,"green"],
+    [3,12,"green"],
+
+    [11,2,"yellow"],
+    [11,3,"yellow"],
+    [12,2,"yellow"],
+    [12,3,"yellow"],
+
+    [11,11,"blue"],
+    [11,12,"blue"],
+    [12,11,"blue"],
+    [12,12,"blue"]
+
+  ];
+
+
+  positions.forEach(
+    position => {
 
       if (
-        opponentPosition === position &&
-        opponentPosition > 0 &&
-        opponentPosition < 57
+        position[0] === row &&
+        position[1] === col
       ) {
 
-        opponent.pieces[j] = 0;
+        const circle =
+          document.createElement(
+            "div"
+          );
 
-        captureSound();
+        circle.className =
+          "home-circle";
 
-        message.textContent =
-          `${player.name} captured ${opponent.name}! 💥`;
+        cell.appendChild(
+          circle
+        );
 
       }
 
     }
-
-  }
-
-}
-
-
-/* =========================================
-   NEXT PLAYER
-========================================= */
-
-function nextPlayer() {
-
-  currentPlayer++;
-
-  if (
-    currentPlayer >= players.length
-  ) {
-    currentPlayer = 0;
-  }
-
-  diceValue = 1;
-
-  dice.textContent =
-    diceFaces[0];
-
-  updateTurn();
-
-  message.textContent =
-    `${players[currentPlayer].name}'s turn. Roll the dice.`;
-
-  rollButton.disabled = false;
-
-  waitingForPiece = false;
+  );
 
 }
 
 
-/* =========================================
-   CLEAR HIGHLIGHTS
-========================================= */
+/* =====================================================
+   CREATE BOARD PIECES
+===================================================== */
 
-function clearHighlights() {
+function createBoardPieces() {
 
-  document
-    .querySelectorAll(".piece")
-    .forEach(piece => {
-
-      piece.classList.remove(
-        "movable"
-      );
-
-      piece.removeEventListener(
-        "click",
-        pieceClickHandler
-      );
-
-    });
-
-}
-
-
-/* =========================================
-   UPDATE BOARD
-========================================= */
-
-function updateBoard() {
-
-  /*
-    This first version keeps pieces
-    visually inside their player areas.
-    The game state and movement system
-    are already working.
-  */
-
-  const allPieces =
-    document.querySelectorAll(".piece");
-
-  allPieces.forEach(piece => {
-
-    piece.classList.remove(
-      "finished-piece"
+  board
+    .querySelectorAll(".board-piece")
+    .forEach(piece =>
+      piece.remove()
     );
+
+
+  COLORS.forEach(color => {
+
+    players[color].pieces
+      .forEach(
+        (piece, index) => {
+
+          const element =
+            document.createElement(
+              "button"
+            );
+
+          element.className =
+            `board-piece piece-${color}`;
+
+          element.dataset.color =
+            color;
+
+          element.dataset.index =
+            index;
+
+          element.title =
+            `${players[color].name} piece ${index + 1}`;
+
+
+          element.addEventListener(
+            "click",
+            () => {
+
+              selectPiece(
+                color,
+                index
+              );
+
+            }
+          );
+
+
+          board.appendChild(
+            element
+          );
+
+        }
+      );
 
   });
 
-  players.forEach(player => {
 
-    player.pieces.forEach(
-      (position, index) => {
+  updateAllPieces();
 
-        if (position >= 57) {
+}
 
-          const piece =
-            document.querySelector(
-              `.piece[data-player="${player.color}"][data-piece="${index}"]`
-            );
 
-          if (piece) {
+/* =====================================================
+   GET PATH COORDINATE
+===================================================== */
 
-            piece.classList.add(
-              "finished-piece"
-            );
+function getPathCoordinate(
+  color,
+  position
+) {
 
-          }
+  /*
+     Position 0-51:
+     Outer track.
+  */
+
+  if (
+    position >= 0 &&
+    position <= 51
+  ) {
+
+    const index =
+      (
+        START_INDEX[color] +
+        position
+      ) % 52;
+
+    return PATH[index];
+
+  }
+
+
+  /*
+     Position 52-57:
+     Home lane.
+  */
+
+  if (
+    position >= 52 &&
+    position <= 57
+  ) {
+
+    const laneIndex =
+      position - 52;
+
+    return HOME_LANES[color][
+      laneIndex
+    ];
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =====================================================
+   HOME PIECE POSITION
+===================================================== */
+
+function getHomePiecePosition(
+  color,
+  index
+) {
+
+  return HOME_POSITIONS[color][index];
+
+}
+
+
+/* =====================================================
+   UPDATE PIECE
+===================================================== */
+
+function updatePiecePosition(
+  color,
+  index
+) {
+
+  const element =
+    document.querySelector(
+      `.board-piece[data-color="${color}"][data-index="${index}"]`
+    );
+
+  if (!element) return;
+
+
+  const piece =
+    players[color].pieces[index];
+
+
+  /*
+     Finished pieces disappear into
+     the center.
+  */
+
+  if (piece.finished) {
+
+    element.style.left = "50%";
+    element.style.top = "50%";
+    element.style.opacity = "0";
+
+    return;
+
+  }
+
+
+  element.style.opacity = "1";
+
+
+  /*
+     Piece is in home.
+  */
+
+  if (
+    piece.position === -1
+  ) {
+
+    const position =
+      getHomePiecePosition(
+        color,
+        index
+      );
+
+    element.style.left =
+      `${((position[0] + .5) / 15) * 100}%`;
+
+    element.style.top =
+      `${((position[1] + .5) / 15) * 100}%`;
+
+    return;
+
+  }
+
+
+  /*
+     Piece is on track/home lane.
+  */
+
+  const position =
+    getPathCoordinate(
+      color,
+      piece.position
+    );
+
+
+  if (!position) return;
+
+
+  element.style.left =
+    `${((position[0] + .5) / 15) * 100}%`;
+
+  element.style.top =
+    `${((position[1] + .5) / 15) * 100}%`;
+
+}
+
+
+/* =====================================================
+   UPDATE EVERYTHING
+===================================================== */
+
+function updateAllPieces() {
+
+  COLORS.forEach(color => {
+
+    players[color].pieces
+      .forEach(
+        (_, index) => {
+
+          updatePiecePosition(
+            color,
+            index
+          );
+
+        }
+      );
+
+  });
+
+
+  updateHand();
+
+}
+
+
+/* =====================================================
+   CAN PIECE MOVE?
+===================================================== */
+
+function canPieceMove(
+  color,
+  index
+) {
+
+  const piece =
+    players[color].pieces[index];
+
+
+  if (piece.finished) {
+    return false;
+  }
+
+
+  /*
+     Home requires 6.
+  */
+
+  if (
+    piece.position === -1
+  ) {
+
+    return diceValue === 6;
+
+  }
+
+
+  /*
+     Don't go beyond final square.
+  */
+
+  return (
+    piece.position +
+    diceValue <=
+    57
+  );
+
+}
+
+
+/* =====================================================
+   AVAILABLE MOVES
+===================================================== */
+
+function availableMoves(
+  color
+) {
+
+  const result = [];
+
+  players[color].pieces
+    .forEach(
+      (_, index) => {
+
+        if (
+          canPieceMove(
+            color,
+            index
+          )
+        ) {
+
+          result.push(index);
 
         }
 
       }
     );
 
-  });
+  return result;
 
 }
 
 
-/* =========================================
-   WINNER
-========================================= */
+/* =====================================================
+   ROLL DICE
+===================================================== */
 
-function finishGame() {
+async function rollDice() {
 
-  const winner =
-    players[currentPlayer];
+  if (gameFinished) return;
 
-  gameOver = true;
+  if (hasRolled) return;
+
+  if (
+    !players[currentPlayer].human
+  ) return;
+
+
+  hasRolled = true;
 
   rollButton.disabled = true;
 
-  winnerTitle.textContent =
-    `${winner.name} WINS! 🏆`;
-
-  winnerModal.classList.remove(
-    "hidden"
+  diceButton.classList.add(
+    "rolling"
   );
 
-  winnerSound();
+  playDiceSound();
 
-  stopMusic();
+
+  /*
+     Animate dice.
+  */
+
+  let count = 0;
+
+
+  const animation =
+    setInterval(
+      () => {
+
+        const temporary =
+          Math.floor(
+            Math.random() * 6
+          ) + 1;
+
+        diceNumber.textContent =
+          temporary;
+
+        diceValueTop.textContent =
+          temporary;
+
+        count++;
+
+
+        if (count >= 8) {
+
+          clearInterval(
+            animation
+          );
+
+
+          diceValue =
+            Math.floor(
+              Math.random() * 6
+            ) + 1;
+
+
+          diceNumber.textContent =
+            diceValue;
+
+          diceValueTop.textContent =
+            diceValue;
+
+
+          diceButton.classList.remove(
+            "rolling"
+          );
+
+
+          afterRoll();
+
+        }
+
+      },
+      70
+    );
 
 }
 
 
-/* =========================================
-   NEW GAME
-========================================= */
+/* =====================================================
+   AFTER ROLL
+===================================================== */
 
-function resetGame() {
+function afterRoll() {
 
-  players.forEach(player => {
+  const moves =
+    availableMoves(
+      currentPlayer
+    );
 
-    player.pieces =
-      [0, 0, 0, 0];
 
-    player.finished = 0;
+  if (
+    moves.length === 0
+  ) {
 
-  });
+    turnStatus.textContent =
+      "No possible move.";
 
-  currentPlayer = 0;
+    setTimeout(
+      () => {
 
-  diceValue = 1;
+        if (
+          diceValue === 6
+        ) {
 
-  waitingForPiece = false;
+          resetTurnForSix();
 
-  gameOver = false;
+        }
+        else {
 
-  dice.textContent =
-    diceFaces[0];
+          nextTurn();
 
-  message.textContent =
-    "Roll the dice to begin!";
+        }
 
-  rollButton.disabled = false;
+      },
+      900
+    );
 
-  winnerModal.classList.add(
-    "hidden"
+    return;
+
+  }
+
+
+  turnStatus.textContent =
+    "Choose a piece";
+
+
+  highlightPieces(
+    moves
   );
+
+}
+
+
+/* =====================================================
+   HIGHLIGHT
+===================================================== */
+
+function highlightPieces(
+  moves
+) {
 
   clearHighlights();
 
-  updateTurn();
 
-  updateBoard();
+  /*
+     Hand.
+  */
 
-  if (soundEnabled) {
-    startMusic();
+  if (
+    currentPlayer === "red"
+  ) {
+
+    handPieces.forEach(
+      (piece, index) => {
+
+        if (
+          moves.includes(index)
+        ) {
+
+          piece.classList.add(
+            "available"
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /*
+     Board.
+  */
+
+  moves.forEach(
+    index => {
+
+      const element =
+        document.querySelector(
+          `.board-piece[data-color="${currentPlayer}"][data-index="${index}"]`
+        );
+
+      if (element) {
+
+        element.classList.add(
+          "selectable"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   CLEAR HIGHLIGHTS
+===================================================== */
+
+function clearHighlights() {
+
+  handPieces.forEach(
+    piece => {
+
+      piece.classList.remove(
+        "available"
+      );
+
+    }
+  );
+
+
+  board
+    .querySelectorAll(".board-piece")
+    .forEach(
+      piece => {
+
+        piece.classList.remove(
+          "selectable"
+        );
+
+      }
+    );
+
+}
+
+
+/* =====================================================
+   SELECT PIECE
+===================================================== */
+
+function selectPiece(
+  color,
+  index
+) {
+
+  if (gameFinished) return;
+
+  if (
+    color !== currentPlayer
+  ) return;
+
+  if (!hasRolled) return;
+
+  if (
+    !players[color].human
+  ) return;
+
+
+  if (
+    !canPieceMove(
+      color,
+      index
+    )
+  ) {
+
+    turnStatus.textContent =
+      "That piece cannot move.";
+
+    return;
+
+  }
+
+
+  movePiece(
+    color,
+    index
+  );
+
+}
+
+
+/* =====================================================
+   HAND CLICK
+===================================================== */
+
+handPieces.forEach(
+  (piece, index) => {
+
+    piece.addEventListener(
+      "click",
+      () => {
+
+        selectPiece(
+          "red",
+          index
+        );
+
+      }
+    );
+
+  }
+);
+
+
+/* =====================================================
+   MOVE PIECE
+===================================================== */
+
+async function movePiece(
+  color,
+  index
+) {
+
+  if (
+    !canPieceMove(
+      color,
+      index
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  clearHighlights();
+
+
+  const piece =
+    players[color].pieces[index];
+
+
+  /*
+     Leaving home.
+  */
+
+  if (
+    piece.position === -1
+  ) {
+
+    piece.position = 0;
+
+    playMoveSound();
+
+    await animateSmallMove();
+
+  }
+
+  else {
+
+    /*
+       Move one square at a time.
+    */
+
+    for (
+      let step = 0;
+      step < diceValue;
+      step++
+    ) {
+
+      piece.position++;
+
+      updatePiecePosition(
+        color,
+        index
+      );
+
+      playMoveSound();
+
+      await delay(110);
+
+    }
+
+  }
+
+
+  /*
+     Finished.
+  */
+
+  if (
+    piece.position === 57
+  ) {
+
+    piece.finished = true;
+
+    playFinishSound();
+
+  }
+
+
+  updateAllPieces();
+
+
+  /*
+     Capture.
+  */
+
+  if (
+    !piece.finished
+  ) {
+
+    captureOpponents(
+      color,
+      index
+    );
+
+  }
+
+
+  updateAllPieces();
+
+
+  /*
+     Winner.
+  */
+
+  if (
+    playerHasWon(color)
+  ) {
+
+    finishGame(color);
+
+    return;
+
+  }
+
+
+  /*
+     Six gives another turn.
+  */
+
+  if (
+    diceValue === 6
+  ) {
+
+    hasRolled = false;
+
+    rollButton.disabled =
+      !players[currentPlayer].human;
+
+    turnStatus.textContent =
+      "You rolled a 6 — roll again.";
+
+    if (
+      !players[currentPlayer].human
+    ) {
+
+      computerTurn();
+
+    }
+
+    return;
+
+  }
+
+
+  nextTurn();
+
+}
+
+
+/* =====================================================
+   ANIMATION HELPERS
+===================================================== */
+
+function delay(ms) {
+
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+
+}
+
+
+function animateSmallMove() {
+
+  return delay(180);
+
+}
+
+
+/* =====================================================
+   CAPTURE
+===================================================== */
+
+function captureOpponents(
+  color,
+  index
+) {
+
+  const movingPiece =
+    players[color].pieces[index];
+
+
+  if (
+    movingPiece.position <
+    0 ||
+    movingPiece.position >
+    51
+  ) {
+
+    return;
+
+  }
+
+
+  const absolute =
+    getAbsoluteTrackPosition(
+      color,
+      movingPiece.position
+    );
+
+
+  /*
+     Safe square cannot capture.
+  */
+
+  if (
+    SAFE_SQUARES.includes(
+      absolute
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  COLORS.forEach(
+    opponentColor => {
+
+      if (
+        opponentColor === color
+      ) return;
+
+
+      players[opponentColor]
+        .pieces
+        .forEach(
+          opponentPiece => {
+
+            if (
+              opponentPiece.position <
+              0 ||
+              opponentPiece.position >
+              51
+            ) {
+
+              return;
+
+            }
+
+
+            const opponentAbsolute =
+              getAbsoluteTrackPosition(
+                opponentColor,
+                opponentPiece.position
+              );
+
+
+            if (
+              opponentAbsolute ===
+              absolute
+            ) {
+
+              opponentPiece.position =
+                -1;
+
+              playCaptureSound();
+
+            }
+
+          }
+        );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   ABSOLUTE TRACK POSITION
+===================================================== */
+
+function getAbsoluteTrackPosition(
+  color,
+  relativePosition
+) {
+
+  return (
+    START_INDEX[color] +
+    relativePosition
+  ) % 52;
+
+}
+
+
+/* =====================================================
+   WINNER
+===================================================== */
+
+function playerHasWon(
+  color
+) {
+
+  return players[color]
+    .pieces
+    .every(
+      piece =>
+        piece.finished
+    );
+
+}
+
+
+function finishGame(
+  color
+) {
+
+  gameFinished = true;
+
+  clearHighlights();
+
+
+  if (
+    color === "red"
+  ) {
+
+    winnerTitle.textContent =
+      "🎉 YOU WIN!";
+
+    winnerText.textContent =
+      "Congratulations! All four of your pieces reached home.";
+
+  }
+
+  else {
+
+    winnerTitle.textContent =
+      `${players[color].name} Wins!`;
+
+    winnerText.textContent =
+      "The game is over.";
+
+  }
+
+
+  playWinSound();
+
+
+  setTimeout(
+    () => {
+
+      winModal.classList.add(
+        "show"
+      );
+
+    },
+    700
+  );
+
+}
+
+
+/* =====================================================
+   NEXT TURN
+===================================================== */
+
+function nextTurn() {
+
+  clearHighlights();
+
+  hasRolled = false;
+
+  diceValue = 0;
+
+  diceNumber.textContent = "1";
+
+  diceValueTop.textContent = "1";
+
+
+  const currentIndex =
+    COLORS.indexOf(
+      currentPlayer
+    );
+
+
+  currentPlayer =
+    COLORS[
+      (currentIndex + 1) %
+      COLORS.length
+    ];
+
+
+  updateTurnUI();
+
+
+  if (
+    players[currentPlayer].human
+  ) {
+
+    rollButton.disabled = false;
+
+  }
+
+  else {
+
+    rollButton.disabled = true;
+
+    computerTurn();
+
   }
 
 }
 
 
-newGameButton.addEventListener(
+/* =====================================================
+   SIX AGAIN
+===================================================== */
+
+function resetTurnForSix() {
+
+  hasRolled = false;
+
+  diceValue = 0;
+
+  rollButton.disabled =
+    !players[currentPlayer].human;
+
+  diceNumber.textContent = "1";
+
+  diceValueTop.textContent = "1";
+
+
+  if (
+    players[currentPlayer].human
+  ) {
+
+    turnStatus.textContent =
+      "Roll again.";
+
+  }
+
+  else {
+
+    computerTurn();
+
+  }
+
+}
+
+
+/* =====================================================
+   TURN UI
+===================================================== */
+
+function updateTurnUI() {
+
+  const player =
+    players[currentPlayer];
+
+
+  turnName.textContent =
+    `${player.name}'s Turn`;
+
+
+  turnDot.style.background =
+    getColor(currentPlayer);
+
+
+  turnDot.style.boxShadow =
+    `0 0 10px ${getColor(currentPlayer)}`;
+
+
+  if (
+    player.human
+  ) {
+
+    turnStatus.textContent =
+      "Roll the dice";
+
+  }
+
+  else {
+
+    turnStatus.textContent =
+      "Computer is thinking...";
+
+  }
+
+}
+
+
+/* =====================================================
+   COMPUTER
+===================================================== */
+
+function computerTurn() {
+
+  clearTimeout(
+    computerTimeout
+  );
+
+
+  computerTimeout =
+    setTimeout(
+      () => {
+
+        if (
+          gameFinished
+        ) return;
+
+
+        computerRoll();
+
+      },
+      1000
+    );
+
+}
+
+
+/* =====================================================
+   COMPUTER ROLL
+===================================================== */
+
+function computerRoll() {
+
+  hasRolled = true;
+
+  diceButton.classList.add(
+    "rolling"
+  );
+
+  playDiceSound();
+
+
+  let count = 0;
+
+
+  const animation =
+    setInterval(
+      () => {
+
+        const temporary =
+          Math.floor(
+            Math.random() * 6
+          ) + 1;
+
+
+        diceNumber.textContent =
+          temporary;
+
+        diceValueTop.textContent =
+          temporary;
+
+
+        count++;
+
+
+        if (
+          count >= 8
+        ) {
+
+          clearInterval(
+            animation
+          );
+
+
+          diceValue =
+            Math.floor(
+              Math.random() * 6
+            ) + 1;
+
+
+          diceNumber.textContent =
+            diceValue;
+
+          diceValueTop.textContent =
+            diceValue;
+
+
+          diceButton.classList.remove(
+            "rolling"
+          );
+
+
+          computerChoosePiece();
+
+        }
+
+      },
+      70
+    );
+
+}
+
+
+/* =====================================================
+   COMPUTER CHOOSES PIECE
+===================================================== */
+
+function computerChoosePiece() {
+
+  const moves =
+    availableMoves(
+      currentPlayer
+    );
+
+
+  if (
+    moves.length === 0
+  ) {
+
+    turnStatus.textContent =
+      "No possible move.";
+
+    setTimeout(
+      () => {
+
+        if (
+          diceValue === 6
+        ) {
+
+          resetTurnForSix();
+
+        }
+        else {
+
+          nextTurn();
+
+        }
+
+      },
+      800
+    );
+
+    return;
+
+  }
+
+
+  let selected =
+    moves[0];
+
+
+  /*
+     Prefer a piece that can capture.
+  */
+
+  const captureMove =
+    moves.find(
+      index =>
+        canCaptureWithMove(
+          currentPlayer,
+          index
+        )
+    );
+
+
+  if (
+    captureMove !== undefined
+  ) {
+
+    selected =
+      captureMove;
+
+  }
+
+  else {
+
+    /*
+       Prefer a piece already moving.
+    */
+
+    const moving =
+      moves.filter(
+        index =>
+          players[currentPlayer]
+            .pieces[index]
+            .position !== -1
+      );
+
+
+    if (
+      moving.length
+    ) {
+
+      selected =
+        moving[
+          Math.floor(
+            Math.random() *
+            moving.length
+          )
+        ];
+
+    }
+
+  }
+
+
+  turnStatus.textContent =
+    "Computer is moving...";
+
+
+  setTimeout(
+    () => {
+
+      movePiece(
+        currentPlayer,
+        selected
+      );
+
+    },
+    600
+  );
+
+}
+
+
+/* =====================================================
+   COMPUTER CAPTURE CHECK
+===================================================== */
+
+function canCaptureWithMove(
+  color,
+  index
+) {
+
+  const piece =
+    players[color].pieces[index];
+
+
+  let newPosition;
+
+
+  if (
+    piece.position === -1
+  ) {
+
+    newPosition = 0;
+
+  }
+
+  else {
+
+    newPosition =
+      piece.position +
+      diceValue;
+
+  }
+
+
+  if (
+    newPosition < 0 ||
+    newPosition > 51
+  ) {
+
+    return false;
+
+  }
+
+
+  const absolute =
+    getAbsoluteTrackPosition(
+      color,
+      newPosition
+    );
+
+
+  if (
+    SAFE_SQUARES.includes(
+      absolute
+    )
+  ) {
+
+    return false;
+
+  }
+
+
+  return COLORS.some(
+    opponent => {
+
+      if (
+        opponent === color
+      ) return false;
+
+
+      return players[opponent]
+        .pieces
+        .some(
+          opponentPiece => {
+
+            if (
+              opponentPiece.position < 0 ||
+              opponentPiece.position > 51
+            ) {
+
+              return false;
+
+            }
+
+
+            return (
+              getAbsoluteTrackPosition(
+                opponent,
+                opponentPiece.position
+              ) === absolute
+            );
+
+          }
+        );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   UPDATE HAND
+===================================================== */
+
+function updateHand() {
+
+  const pieces =
+    players.red.pieces;
+
+
+  let finished = 0;
+
+
+  pieces.forEach(
+    (piece, index) => {
+
+      const hand =
+        handPieces[index];
+
+
+      if (
+        piece.finished
+      ) {
+
+        finished++;
+
+        hand.classList.add(
+          "finished"
+        );
+
+      }
+
+      else {
+
+        hand.classList.remove(
+          "finished"
+        );
+
+      }
+
+    }
+  );
+
+
+  homeCount.textContent =
+    finished;
+
+}
+
+
+/* =====================================================
+   COLOR
+===================================================== */
+
+function getColor(color) {
+
+  const colors = {
+
+    red: "#e52d39",
+
+    green: "#25ad59",
+
+    yellow: "#efc62a",
+
+    blue: "#2874dc"
+
+  };
+
+
+  return colors[color];
+
+}
+
+
+/* =====================================================
+   GAME START
+===================================================== */
+
+function startComputerGame() {
+
+  mode = "computer";
+
+  modeLabel.textContent =
+    "Computer Game";
+
+
+  createPlayers();
+
+
+  players.red.human = true;
+
+  players.green.human = false;
+
+  players.yellow.human = false;
+
+  players.blue.human = false;
+
+
+  showGame();
+
+  resetGame();
+
+}
+
+
+function startMultiplayerGame() {
+
+  mode = "multiplayer";
+
+  modeLabel.textContent =
+    "Multiplayer";
+
+
+  createPlayers();
+
+
+  /*
+     Local multiplayer.
+     Players take turns on the
+     same device.
+  */
+
+  players.red.human = true;
+
+  players.green.human = true;
+
+  players.yellow.human = true;
+
+  players.blue.human = true;
+
+
+  players.red.name = "Player 1";
+  players.green.name = "Player 2";
+  players.yellow.name = "Player 3";
+  players.blue.name = "Player 4";
+
+
+  showGame();
+
+  resetGame();
+
+}
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+function resetGame() {
+
+  clearTimeout(
+    computerTimeout
+  );
+
+
+  createPlayers();
+
+
+  if (
+    mode === "computer"
+  ) {
+
+    players.red.human = true;
+
+    players.green.human = false;
+
+    players.yellow.human = false;
+
+    players.blue.human = false;
+
+  }
+
+  else {
+
+    players.red.human = true;
+
+    players.green.human = true;
+
+    players.yellow.human = true;
+
+    players.blue.human = true;
+
+
+    players.red.name = "Player 1";
+    players.green.name = "Player 2";
+    players.yellow.name = "Player 3";
+    players.blue.name = "Player 4";
+
+  }
+
+
+  currentPlayer = "red";
+
+  diceValue = 0;
+
+  hasRolled = false;
+
+  gameFinished = false;
+
+
+  diceNumber.textContent = "1";
+
+  diceValueTop.textContent = "1";
+
+
+  winModal.classList.remove(
+    "show"
+  );
+
+
+  buildBoard();
+
+  createBoardPieces();
+
+  updateAllPieces();
+
+  updateTurnUI();
+
+
+  rollButton.disabled = false;
+
+}
+
+
+/* =====================================================
+   SHOW GAME
+===================================================== */
+
+function showGame() {
+
+  menuScreen.classList.remove(
+    "active"
+  );
+
+  gameScreen.classList.add(
+    "active"
+  );
+
+}
+
+
+/* =====================================================
+   SHOW MENU
+===================================================== */
+
+function showMenu() {
+
+  clearTimeout(
+    computerTimeout
+  );
+
+
+  gameScreen.classList.remove(
+    "active"
+  );
+
+  menuScreen.classList.add(
+    "active"
+  );
+
+}
+
+
+/* =====================================================
+   AUDIO
+===================================================== */
+
+let audioContext = null;
+
+let masterGain = null;
+
+
+function setupAudio() {
+
+  if (
+    audioContext
+  ) return;
+
+
+  audioContext =
+    new (
+      window.AudioContext ||
+      window.webkitAudioContext
+    )();
+
+
+  masterGain =
+    audioContext.createGain();
+
+
+  masterGain.gain.value =
+    soundEnabled
+      ? .12
+      : 0;
+
+
+  masterGain.connect(
+    audioContext.destination
+  );
+
+}
+
+
+function tone(
+  frequency,
+  duration,
+  type = "sine",
+  volume = .2
+) {
+
+  if (
+    !soundEnabled
+  ) return;
+
+
+  setupAudio();
+
+
+  const oscillator =
+    audioContext.createOscillator();
+
+
+  const gain =
+    audioContext.createGain();
+
+
+  oscillator.type =
+    type;
+
+  oscillator.frequency.value =
+    frequency;
+
+
+  gain.gain.setValueAtTime(
+    .0001,
+    audioContext.currentTime
+  );
+
+
+  gain.gain.exponentialRampToValueAtTime(
+    volume,
+    audioContext.currentTime + .015
+  );
+
+
+  gain.gain.exponentialRampToValueAtTime(
+    .0001,
+    audioContext.currentTime + duration
+  );
+
+
+  oscillator.connect(gain);
+
+  gain.connect(
+    masterGain
+  );
+
+
+  oscillator.start();
+
+
+  oscillator.stop(
+    audioContext.currentTime +
+    duration
+  );
+
+}
+
+
+/* =====================================================
+   SOUND EFFECTS
+===================================================== */
+
+function playDiceSound() {
+
+  tone(
+    320,
+    .07,
+    "square",
+    .13
+  );
+
+
+  setTimeout(
+    () =>
+      tone(
+        480,
+        .07,
+        "square",
+        .13
+      ),
+    80
+  );
+
+}
+
+
+function playMoveSound() {
+
+  tone(
+    600,
+    .035,
+    "triangle",
+    .08
+  );
+
+}
+
+
+function playCaptureSound() {
+
+  tone(
+    150,
+    .16,
+    "sawtooth",
+    .17
+  );
+
+}
+
+
+function playFinishSound() {
+
+  tone(
+    700,
+    .12,
+    "triangle",
+    .15
+  );
+
+
+  setTimeout(
+    () =>
+      tone(
+        900,
+        .15,
+        "triangle",
+        .15
+      ),
+    120
+  );
+
+}
+
+
+function playWinSound() {
+
+  const notes = [
+    523,
+    659,
+    784,
+    1046
+  ];
+
+
+  notes.forEach(
+    (note, index) => {
+
+      setTimeout(
+        () =>
+          tone(
+            note,
+            .25,
+            "triangle",
+            .2
+          ),
+        index * 150
+      );
+
+    }
+  );
+
+
+  /*
+     Celebration/clapping.
+  */
+
+  for (
+    let i = 0;
+    i < 10;
+    i++
+  ) {
+
+    setTimeout(
+      () => {
+
+        tone(
+          900 +
+          Math.random() * 400,
+          .05,
+          "square",
+          .1
+        );
+
+      },
+      750 + i * 100
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   SOUND BUTTON
+===================================================== */
+
+soundBtn.addEventListener(
   "click",
-  resetGame
+  () => {
+
+    soundEnabled =
+      !soundEnabled;
+
+
+    soundBtn.textContent =
+      soundEnabled
+        ? "🔊"
+        : "🔇";
+
+
+    if (
+      masterGain
+    ) {
+
+      masterGain.gain.value =
+        soundEnabled
+          ? .12
+          : 0;
+
+    }
+
+  }
 );
 
-playAgainButton.addEventListener(
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+computerBtn.addEventListener(
   "click",
-  resetGame
+  startComputerGame
 );
 
 
-/* =========================================
-   START GAME
-========================================= */
+multiplayerBtn.addEventListener(
+  "click",
+  startMultiplayerGame
+);
 
-updateTurn();
-updateBoard();
+
+backBtn.addEventListener(
+  "click",
+  showMenu
+);
+
+
+rollButton.addEventListener(
+  "click",
+  rollDice
+);
+
+
+diceButton.addEventListener(
+  "click",
+  rollDice
+);
+
+
+document
+  .getElementById(
+    "newGameButton"
+  )
+  .addEventListener(
+    "click",
+    resetGame
+  );
+
+
+document
+  .getElementById(
+    "rulesButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      rulesModal.classList.add(
+        "show"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "closeRules"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      rulesModal.classList.remove(
+        "show"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "againButton"
+  )
+  .addEventListener(
+    "click",
+    resetGame
+  );
+
+
+document
+  .getElementById(
+    "menuButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      winModal.classList.remove(
+        "show"
+      );
+
+      showMenu();
+
+    }
+  );
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+createPlayers();
+
+buildBoard();
+
+createBoardPieces();
+
+updateAllPieces();
+
+updateTurnUI();
